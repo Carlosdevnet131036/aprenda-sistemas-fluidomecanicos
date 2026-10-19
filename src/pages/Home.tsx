@@ -1,6 +1,7 @@
 import { MODULES } from '../content/modules';
 import { QUESTIONS } from '../content/questions';
 import { EXERCISES } from '../content/exercises';
+import { REVISAO, REVISAO_GROUPS } from '../content/revisao';
 import { useProgress } from '../progressContext';
 import { moduleHref } from '../router';
 
@@ -16,6 +17,7 @@ export function Home() {
   const started = state.visitedModules.length > 0;
   return (
     <div className="home">
+      <RevisaoBanner />
       <section className="hero">
         <div className="hero__text">
           <p className="kicker">Revisão para a A1 • do zero à prova</p>
@@ -134,5 +136,25 @@ export function Trail() {
         );
       })}
     </ol>
+  );
+}
+
+function RevisaoBanner() {
+  const [state] = useProgress();
+  const solved = REVISAO.filter((e) => state.solvedExercises.includes(e.id)).length;
+  return (
+    <section className="revisao-banner" aria-labelledby="rev-t">
+      <p className="kicker kicker--hot">★ Novo • Prioridade para a prova</p>
+      <h2 id="rev-t">Lista de revisão do professor</h2>
+      <p>
+        O professor passou a lista de revisão — questões dela devem cair na prova. São {REVISAO.length} questões resolvidas passo a passo:{' '}
+        {REVISAO_GROUPS.map((g) => g.title.toLowerCase()).join('; ')}.
+      </p>
+      <div className="row">
+        <a className="btn btn--big btn--hot" href="#/revisao">
+          {solved > 0 ? `Continuar a revisão (${solved}/${REVISAO.length})` : 'Estudar a lista de revisão'}
+        </a>
+      </div>
+    </section>
   );
 }

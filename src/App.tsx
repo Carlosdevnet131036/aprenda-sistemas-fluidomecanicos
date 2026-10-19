@@ -4,9 +4,11 @@ import { useRoute } from './router';
 import { Home, useOverall } from './pages/Home';
 import { ModulePage } from './pages/ModulePage';
 import { QuizPage } from './pages/QuizPage';
+import { RevisaoPage } from './pages/RevisaoPage';
 import { ConverterPage, ExercisesPage, FormulasPage, GlossaryPage, LabPage, StudyPage, TrailPage } from './pages/Pages';
 
 const NAV = [
+  { href: '#/revisao', label: '★ Revisão da prova', match: ['revisao'], hot: true },
   { href: '#/trilha', label: 'Trilha', match: ['trilha', 'modulo'] },
   { href: '#/laboratorio', label: 'Laboratório', match: ['laboratorio'] },
   { href: '#/exercicios', label: 'Exercícios', match: ['exercicios'] },
@@ -47,6 +49,10 @@ export function App() {
       if (mod) title = `Módulo ${mod.num}: ${mod.title}`;
       break;
     }
+    case 'revisao':
+      page = <RevisaoPage key={a ?? 'lista'} id={a} />;
+      title = 'Revisão da prova';
+      break;
     case 'quiz':
       page = <QuizPage key={route.raw} query={route.query} />;
       title = 'Quiz';
@@ -109,7 +115,7 @@ export function App() {
         </div>
         <nav id="nav" className={`nav ${menu ? 'nav--open' : ''}`} aria-label="Principal">
           {NAV.map((n) => (
-            <a key={n.href} href={n.href} aria-current={n.match.includes(head ?? '') ? 'page' : undefined}>
+            <a key={n.href} href={n.href} className={n.hot ? 'nav__hot' : undefined} aria-current={n.match.includes(head ?? '') ? 'page' : undefined}>
               {n.label}
             </a>
           ))}

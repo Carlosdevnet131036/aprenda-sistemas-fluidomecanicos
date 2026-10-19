@@ -1700,3 +1700,45 @@ main {
     scroll-behavior: auto !important;
   }
 }
+
+/* ---------- Lista de revisão (destaque) ---------- */
+.kicker--hot {
+  color: var(--accent);
+  font-weight: 700;
+}
+.nav a.nav__hot {
+  color: var(--accent);
+  font-weight: 700;
+}
+.nav a.nav__hot[aria-current='page'] {
+  border-bottom-color: var(--accent);
+}
+.btn--hot {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+@media (prefers-color-scheme: dark) {
+  .btn--hot {
+    color: #2a1404;
+  }
+}
+.revisao-banner {
+  margin: 0 0 1.5rem;
+  padding: 1.1rem 1.25rem;
+  border: 2px solid var(--accent);
+  border-left-width: 8px;
+  border-radius: var(--radius);
+  background: var(--warn-soft);
+  box-shadow: var(--shadow);
+}
+.revisao-banner h2 {
+  margin: 0.25rem 0 0.5rem;
+}
+.revisao__progress {
+  max-width: 360px;
+}
+.revisao__group {
+  scroll-margin-top: 110px;
+  margin-top: 1.5rem;
+}

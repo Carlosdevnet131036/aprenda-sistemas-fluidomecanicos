@@ -204,3 +204,47 @@ describe('exercícios: estrutura e resultados recalculados', () => {
     });
   }
 });
+
+describe('lista de revisão da prova', () => {
+  it('15 questões, ids únicos e sem colisão com os exercícios', async () => {
+    const { REVISAO, REVISAO_GROUPS } = await import('./revisao');
+    expect(REVISAO.length).toBe(15);
+    const ids = REVISAO.map((e) => e.id);
+    expect(new Set(ids).size).toBe(15);
+    expect(ids.some((id) => EXERCISES.some((e) => e.id === id))).toBe(false);
+    expect(REVISAO_GROUPS.flatMap((g) => g.ids).sort()).toEqual([...ids].sort());
+    for (const e of REVISAO) {
+      const m = MODULES.find((x) => x.id === e.module)!;
+      expect(m.sections.some((s) => s.id === e.section), e.id).toBe(true);
+      e.answer?.units.forEach((u) => getUnit(u));
+    }
+  });
+  it('respostas recalculadas de forma independente', async () => {
+    const { REVISAO } = await import('./revisao');
+    const g = 9.81;
+    const pi = 3.1416;
+    const area = (d: number) => (pi * d * d) / 4;
+    const expected: Record<string, number> = {
+      'rev-q1': (1 - 303.15 / 753.15) * 2e6,
+      'rev-q2': 18e6 / (0.7 * (1 - 310 / 650)),
+      'rev-q3': (425 / 0.5) * g,
+      'rev-q4': 0.88 * 1000 * 0.06 * g,
+      'rev-q5': ((0.1 * 0.35) / 0.0006) * 0.08,
+      'rev-q6': ((880 * 6e-5 * 0.25) / 0.0008) * 0.12,
+      'rev-q7': 24 / 0.1 / (0.4 / 0.001),
+      'rev-q8': 300e3 * 0.02,
+      'rev-q9': 160e3 + 870 * g * 1.4 - 101325,
+      'rev-q10': 850 * g * 0.45 + 1000 * g * 0.7,
+      'rev-q11': 1000 * g * 0.45,
+      'rev-q12': 13600 * g * 0.2 - 850 * g * 0.35,
+      'rev-q13': (360 / area(0.032)) * area(0.192),
+      'rev-q14': 5.5e6 * area(0.07),
+      'rev-q15': (1000 * g) / area(0.18) + 850 * g * 1.5,
+    };
+    for (const e of REVISAO) {
+      const a = e.answer!;
+      expect(checkNumericAnswer(expected[e.id] / toSI(1, a.unit), a.unit, a).status, e.id).toBe('correto');
+      expect(Math.abs(toSI(a.value, a.unit) - expected[e.id]) / expected[e.id], e.id).toBeLessThan(0.005);
+    }
+  });
+});
