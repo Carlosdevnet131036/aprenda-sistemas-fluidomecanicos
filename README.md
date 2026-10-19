@@ -4,9 +4,10 @@ Plataforma de estudo para a A1, construída a partir de `Revisao_A1_Sistemas_Flu
 
 ## Como abrir
 
-- **Sem instalar nada:** abra `dist/index.html` com dois cliques. É um arquivo único (≈ 2 MB), funciona offline e pode ser copiado para o celular.
+- **Sem instalar nada:** gere com `npm run build` e abra `dist/index.html` com dois cliques. É um arquivo único (≈ 2,3 MB), funciona offline e pode ser copiado para o celular.
+- **GitHub Pages:** `npm run build:pages` gera `dist-pages/` com arquivos separados (≈ 260 kB compactados no primeiro acesso, e as fontes do KaTeX só são baixadas quando usadas). É o build que o workflow publica.
 - **Desenvolvimento:** `npm install`, depois `npm run dev`.
-- **Verificações:** `npm test` (179 testes), `npm run typecheck`, `npm run build`.
+- **Verificações:** `npm test` (190 testes: regras, conteúdo e telas), `npm run typecheck`, `npm run build`, `npm run build:pages`.
 
 ## O que tem
 
@@ -32,6 +33,7 @@ Tudo fica no `localStorage` do navegador (chave `asf-progresso-v1`), sem cadastr
 - `src/content/` — dados didáticos (módulos, questões, exercícios, glossário). Nenhuma regra de correção aqui.
 - `src/lib/` — regras puras e testadas: `physics.ts` (fórmulas), `units.ts`, `answerCheck.ts`, `quiz.ts`, `calculators.ts`, `progress.ts` (dados v2), `srs.ts` (revisão espaçada), `stats.ts` (indicadores), `plan.ts` (plano de estudos), `recommend.ts`, `exam.ts` (simulado), `backup.ts`.
 - `src/components/`, `src/pages/` — interface (React + TypeScript, KaTeX para fórmulas).
+- `src/test/` — testes de tela com Testing Library em jsdom (quiz, simulado, revisão, exercício, ampliar fórmula, navegação, painel e plano).
 
 ## Auditoria do material
 

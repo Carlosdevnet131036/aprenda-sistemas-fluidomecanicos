@@ -477,7 +477,7 @@ export const CALCULATORS: CalculatorDef[] = [
     summary: 'Propriedades estáticas de um fluido.',
     about: 'Massa específica (massa por volume), densidade relativa (comparação com a água) e peso específico (peso por volume).',
     conditions: 'Referência: água com ρ = 1000 kg/m³. Use o g indicado na questão. d e γr são adimensionais e têm o mesmo valor.',
-    tex: String.raw`\rho = \tfrac{m}{V},\ d = \tfrac{\rho}{1000},\ \gamma = \rho g,\ \gamma_r = \tfrac{\gamma}{\gamma_{água}}`,
+    tex: String.raw`\begin{gathered} \rho = \tfrac{m}{V},\ d = \tfrac{\rho}{1000} \\ \gamma = \rho g,\ \gamma_r = \tfrac{\gamma}{\gamma_{água}} \end{gathered}`,
     selects: [{ key: 'modo', label: 'Dado conhecido', default: 'mV', options: [{ value: 'mV', label: 'Massa e volume' }, { value: 'rho', label: 'Massa específica ρ' }, { value: 'd', label: 'Densidade relativa d' }] }],
     inputs: [
       { key: 'm', label: 'Massa', sym: 'm', units: ['kg', 'g'], default: '348', showIf: (o) => o.modo === 'mV' },
@@ -607,7 +607,7 @@ export const CALCULATORS: CalculatorDef[] = [
     summary: 'Pressão manométrica e absoluta a uma profundidade.',
     about: 'Num fluido em repouso, a pressão aumenta com a profundidade por causa do peso da coluna de fluido acima do ponto.',
     conditions: 'Fluido em repouso, contínuo e com massa específica constante; superfície aberta à atmosfera. Em tanque fechado, troque patm pela pressão do gás sobre o líquido.',
-    tex: String.raw`p_{man} = \rho g h = \gamma h,\ p_{abs} = p_{atm} + p_{man}`,
+    tex: String.raw`\begin{gathered} p_{man} = \rho g h = \gamma h \\ p_{abs} = p_{atm} + p_{man} \end{gathered}`,
     selects: [{ key: 'modo', label: 'Dado do fluido', default: 'rho', options: [{ value: 'rho', label: 'Massa específica ρ (e g)' }, { value: 'gamma', label: 'Peso específico γ' }] }],
     inputs: [
       { key: 'rho', label: 'Massa específica', sym: 'ρ', units: ['kg/m3'], default: '1000', showIf: (o) => o.modo === 'rho' },
@@ -694,7 +694,7 @@ export const CALCULATORS: CalculatorDef[] = [
     summary: 'Força teórica e útil a partir da pressão e do diâmetro do pistão.',
     about: 'A pressão do óleo empurra a face do pistão: a força é a pressão vezes a área.',
     conditions: 'Use a pressão manométrica quando a outra câmara está à atmosfera (a atmosfera age dos dois lados e se cancela). As perdas mecânicas, em fração, reduzem a força útil.',
-    tex: String.raw`F = p_{man}\,A,\ F_{útil} = (1 - \text{perdas})\,F`,
+    tex: String.raw`\begin{gathered} F = p_{man}\,A \\ F_{útil} = (1 - \text{perdas})\,F \end{gathered}`,
     inputs: [
       { key: 'p', label: 'Pressão manométrica', sym: 'pman', units: ['MPa', 'kPa', 'bar', 'Pa'], default: '5,50' },
       { key: 'D', label: 'Diâmetro do pistão', sym: 'D', units: ['mm', 'cm', 'm'], default: '70' },

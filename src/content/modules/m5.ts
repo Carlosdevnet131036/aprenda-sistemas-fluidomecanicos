@@ -48,7 +48,7 @@ export const m5: Module = {
       blocks: [
         p('**De onde vem (complemento):** num ponto a uma profundidade h, o fluido acima forma uma coluna de peso ρ·g·(A·h). Dividindo pela área A da base, sobra ρ·g·h. Por isso a pressão aumenta exatamente ρ·g·h ao descer h metros.'),
         diagram('stevin'),
-        formula(String.raw`p_{\text{fundo}} = p_{\text{topo}} + \rho \cdot g \cdot h = p_{\text{topo}} + \gamma \cdot h`, {
+        formula(String.raw`\begin{aligned} p_{\text{fundo}} &= p_{\text{topo}} + \rho \cdot g \cdot h \\ &= p_{\text{topo}} + \gamma \cdot h \end{aligned}`, {
           caption: 'Lei de Stevin',
           symbols: [
             sym(String.raw`\rho`, 'massa específica do fluido', 'kg/m³'),
@@ -58,7 +58,7 @@ export const m5: Module = {
           ],
           when: 'Fluido em repouso e contínuo (o mesmo fluido entre os dois pontos).',
         }),
-        formula(String.raw`p_{\text{absoluta}} = p_{\text{atm}} + p_{\text{manométrica}}`, {
+        formula(String.raw`\begin{aligned} p_{\text{absoluta}} &= p_{\text{atm}} \\ &\quad + p_{\text{manométrica}} \end{aligned}`, {
           caption: 'Pressão absoluta × manométrica',
           when: 'Manométrica é medida em relação à atmosfera; absoluta é medida em relação ao vácuo.',
         }),
@@ -90,7 +90,7 @@ export const m5: Module = {
         ]),
         p('Acompanhe abaixo o manômetro da Aula 5 (tanque → água desce h1 → óleo desce h2 → mercúrio sobe h3 → atmosfera). Use os botões para caminhar trecho por trecho e veja cada parcela entrando na equação.'),
         diagram('manometro'),
-        formula(String.raw`p_1 + \rho_{\text{água}}\, g\, h_1 + \rho_{\text{óleo}}\, g\, h_2 - \rho_{\text{Hg}}\, g\, h_3 = p_{\text{atm}}`, {
+        formula(String.raw`\begin{aligned} & p_1 + \rho_{\text{água}}\, g\, h_1 + \rho_{\text{óleo}}\, g\, h_2 \\ & \quad - \rho_{\text{Hg}}\, g\, h_3 = p_{\text{atm}} \end{aligned}`, {
           caption: 'Equação do manômetro do Exercício 1 da Aula 5',
         }),
         calc('manometro', 'Montar seu próprio caminho no Laboratório'),

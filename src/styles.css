@@ -922,7 +922,8 @@ html:has(.formula-dialog[open]) {
 }
 .symbol-card dd {
   margin: 0;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
+  hyphens: auto;
 }
 @media (max-width: 480px) {
   .symbol-cards {

@@ -51,7 +51,7 @@ export const m4: Module = {
             ['Peso específico relativo', 'γr = γ / γágua', 'adimensional', '1'],
           ],
         ),
-        formula(String.raw`\rho = \dfrac{m}{V} \qquad d = \dfrac{\rho}{\rho_{\text{água}}} \qquad \gamma = \rho \cdot g \qquad \gamma_r = \dfrac{\gamma}{\gamma_{\text{água}}}`, {
+        formula(String.raw`\begin{gathered} \rho = \dfrac{m}{V} \qquad d = \dfrac{\rho}{\rho_{\text{água}}} \\ \gamma = \rho \cdot g \qquad \gamma_r = \dfrac{\gamma}{\gamma_{\text{água}}} \end{gathered}`, {
           caption: 'Propriedades dos fluidos',
           symbols: [
             sym(String.raw`\rho`, 'massa específica', 'kg/m³'),
@@ -89,7 +89,7 @@ export const m4: Module = {
       title: 'Fórmulas da viscosidade',
       origin: 'material',
       blocks: [
-        formula(String.raw`\tau = \mu \cdot \dfrac{dv}{dy} \qquad \text{perfil linear: } \dfrac{dv}{dy} = \dfrac{v}{e}`, {
+        formula(String.raw`\begin{gathered} \tau = \mu \cdot \dfrac{dv}{dy} \\ \text{perfil linear: } \dfrac{dv}{dy} = \dfrac{v}{e} \end{gathered}`, {
           caption: 'Lei de Newton da viscosidade',
           symbols: [
             sym(String.raw`\tau`, 'tensão de cisalhamento', 'Pa = N/m²'),
@@ -99,7 +99,7 @@ export const m4: Module = {
           ],
           when: 'Película fina entre uma placa móvel e uma fixa, com perfil de velocidade linear, para fluido newtoniano.',
         }),
-        formula(String.raw`F = \tau \cdot A \qquad \text{Pot} = F \cdot v \qquad \nu = \dfrac{\mu}{\rho}\;\Longleftrightarrow\;\mu = \nu \cdot \rho`, {
+        formula(String.raw`\begin{gathered} F = \tau \cdot A \qquad \text{Pot} = F \cdot v \\ \nu = \dfrac{\mu}{\rho}\;\Longleftrightarrow\;\mu = \nu \cdot \rho \end{gathered}`, {
           caption: 'Força viscosa, potência dissipada e viscosidade cinemática',
           symbols: [
             sym('F', 'força viscosa (resistente ao movimento)', 'N'),

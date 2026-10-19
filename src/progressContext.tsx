@@ -2,6 +2,8 @@ import { createContext, useContext, useSyncExternalStore, type ReactNode } from 
 import { createProgressStore, type ProgressState, type ProgressStore } from './lib/progress';
 
 const store = createProgressStore();
+/** Instância única do progresso (exportada para os testes de tela poderem zerá-la). */
+export const progressStore = store;
 const Ctx = createContext<ProgressStore>(store);
 
 export function ProgressProvider({ children }: { children: ReactNode }) {

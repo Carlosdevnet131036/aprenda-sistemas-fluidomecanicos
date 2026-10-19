@@ -137,7 +137,7 @@ export const m0: Module = {
           'Menos com menos dá mais: 500 − (−200) = 500 + 200 = 700. Esse detalhe aparece na 1ª Lei da Termodinâmica e é uma das pegadinhas mais comuns.'),
         box('conceito', '6. Quadrado e π',
           'r² significa r × r: 0,40² = 0,40 × 0,40 = 0,16. O número π vale aproximadamente 3,1416 (o material usa esse valor).'),
-        formula(String.raw`\text{número no SI} = \text{número dado} \times \text{fator da unidade}`, {
+        formula(String.raw`\begin{gathered} \text{número no SI} = \\ \text{número dado} \\ \times\ \text{fator da unidade} \end{gathered}`, {
           caption: 'Ideia geral de toda conversão',
         }),
         box('dica', 'Truque das conversões, sem decorar (do material)',

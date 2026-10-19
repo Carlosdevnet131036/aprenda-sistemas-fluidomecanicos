@@ -84,7 +84,7 @@ export const m2: Module = {
       origin: 'material',
       blocks: [
         p('Aquecer uma panela cheia de água demora mais que aquecer uma xícara (mais massa). Aquecer água demora mais que aquecer o mesmo tanto de óleo (calor específico diferente). E aquecer até 80 °C demora mais que até 40 °C (maior ΔT). A fórmula junta essas três ideias.'),
-        formula(String.raw`Q = m \cdot c \cdot \Delta T \qquad \Delta T = T_{\text{final}} - T_{\text{inicial}}`, {
+        formula(String.raw`\begin{gathered} Q = m \cdot c \cdot \Delta T \\ \Delta T = T_{\text{final}} - T_{\text{inicial}} \end{gathered}`, {
           caption: 'Calor sensível (quando a temperatura muda, sem mudança de fase)',
           symbols: [
             sym('Q', 'calor trocado', 'J'),
@@ -112,7 +112,7 @@ export const m2: Module = {
       origin: 'material',
       blocks: [
         p('Imagine um gás num cilindro com um pistão. Se o gás se expande e empurra o pistão para fora, ele **faz trabalho** sobre a vizinhança (entrega energia). Se o pistão é empurrado para dentro e comprime o gás, a vizinhança faz trabalho **sobre** o gás.'),
-        formula(String.raw`W = p \cdot \Delta V = p \cdot (V_{\text{final}} - V_{\text{inicial}})`, {
+        formula(String.raw`\begin{aligned} W &= p \cdot \Delta V \\ &= p \cdot (V_{\text{final}} - V_{\text{inicial}}) \end{aligned}`, {
           caption: 'Trabalho em processo isobárico',
           symbols: [sym('W', 'trabalho', 'J'), sym('p', 'pressão (constante)', 'Pa'), sym(String.raw`\Delta V`, 'variação de volume', 'm³')],
           when: 'Somente quando a pressão é constante durante o processo. [J] = [Pa]·[m³].',
@@ -135,7 +135,7 @@ export const m2: Module = {
       origin: 'material',
       blocks: [
         p('Pense numa conta bancária. Calor recebido é um **depósito**. Trabalho realizado pelo sistema é um **saque** (energia que sai). O saldo que muda é a energia interna. Por isso:'),
-        formula(String.raw`\Delta U = Q - W \qquad\Longleftrightarrow\qquad Q = \Delta U + W`, {
+        formula(String.raw`\begin{gathered} \Delta U = Q - W \\ \Longleftrightarrow\quad Q = \Delta U + W \end{gathered}`, {
           caption: '1ª Lei (conservação da energia) — convenção adotada no material',
           symbols: [
             sym(String.raw`\Delta U`, 'variação da energia interna', 'J'),

@@ -65,7 +65,7 @@ export const m3: Module = {
       blocks: [
         p('A máquina recebe Qq do reservatório quente → produz trabalho W → rejeita Qf para o reservatório frio. Como opera em ciclo, ΔU = 0, e a 1ª Lei vira um balanço simples:'),
         diagram('maquinaTermica'),
-        formula(String.raw`W = Q_q - Q_f \qquad\qquad \eta = \dfrac{W}{Q_q} = 1 - \dfrac{Q_f}{Q_q}`, {
+        formula(String.raw`\begin{gathered} W = Q_q - Q_f \\ \eta = \dfrac{W}{Q_q} = 1 - \dfrac{Q_f}{Q_q} \end{gathered}`, {
           caption: 'Balanço de energia e rendimento de uma máquina térmica',
           symbols: [
             sym('W', 'trabalho (ou potência) líquido produzido', 'J ou W'),
@@ -84,7 +84,7 @@ export const m3: Module = {
       title: 'Rendimento de Carnot (máximo possível)',
       origin: 'material',
       blocks: [
-        formula(String.raw`\eta_{\text{Carnot}} = 1 - \dfrac{T_f}{T_q} \qquad (T \text{ em KELVIN!})`, {
+        formula(String.raw`\begin{gathered} \eta_{\text{Carnot}} = 1 - \dfrac{T_f}{T_q} \\ (T \text{ em KELVIN!}) \end{gathered}`, {
           caption: 'Rendimento máximo entre dois reservatórios',
           symbols: [sym('T_q', 'temperatura do reservatório quente', 'K'), sym('T_f', 'temperatura do reservatório frio', 'K')],
           when: 'Para o ciclo ideal (reversível) de Carnot, ou como limite máximo de qualquer máquina real entre as mesmas temperaturas.',
@@ -94,7 +94,7 @@ export const m3: Module = {
           'A fórmula usa uma **razão** Tf/Tq. Razões só fazem sentido numa escala que começa no zero verdadeiro: 0 K é a ausência total de agitação térmica. O zero da escala Celsius (gelo fundindo) é arbitrário. Exemplo: 20 °C não é “o dobro” de 10 °C, mas 600 K é de fato o dobro de 300 K.'),
         box('alerta', 'Teste do absurdo (do material)',
           'Entre 327 °C e 27 °C, usar °C daria 1 − 27/327 = 91,7%, um absurdo. Em kelvin dá ≈ 50%. Se o seu resultado de Carnot passar de 90% numa questão comum, desconfie de que usou °C.'),
-        formula(String.raw`\eta_{\text{real}} = (\text{fração}) \cdot \eta_{\text{Carnot}} \qquad Q_q = \dfrac{W}{\eta_{\text{real}}} \qquad Q_f = Q_q - W`, {
+        formula(String.raw`\begin{gathered} \eta_{\text{real}} = \text{fração} \cdot \eta_{\text{C}} \\ Q_q = \dfrac{W}{\eta_{\text{real}}} \\ Q_f = Q_q - W \end{gathered}`, {
           caption: 'Quando a eficiência real é uma fração da de Carnot',
           when: 'Lista Aula 03 – Q2 e Exemplo 1 dos slides.',
         }),

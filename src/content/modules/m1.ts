@@ -116,7 +116,7 @@ export const m1: Module = {
       title: 'Massa específica: do volume para a massa',
       origin: 'material',
       blocks: [
-        formula(String.raw`\rho = \dfrac{m}{V} \qquad\Longleftrightarrow\qquad m = \rho \cdot V`, {
+        formula(String.raw`\begin{gathered} \rho = \dfrac{m}{V} \\ \Longleftrightarrow\quad m = \rho \cdot V \end{gathered}`, {
           caption: 'Massa específica (densidade absoluta)',
           symbols: [sym(String.raw`\rho`, 'massa específica (rô)', 'kg/m³'), sym('m', 'massa', 'kg'), sym('V', 'volume', 'm³')],
           when: 'Para descobrir a massa de fluido que cabe em um volume conhecido (ou vice-versa).',
