@@ -809,6 +809,129 @@ main {
 .symbols-wrap {
   margin: 0.5rem 0 0;
 }
+
+/* ---------- Ampliar fórmula ---------- */
+.formula__tools {
+  display: flex;
+  justify-content: flex-end;
+  margin: 0.2rem 0 0.4rem;
+}
+.formula-line {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.2rem;
+}
+.formula-line > .tex-block {
+  align-self: stretch;
+}
+.formula__zoom {
+  min-height: 44px;
+  padding: 0.35em 0.8em;
+  font-size: 0.92rem;
+}
+.formula-dialog {
+  padding: 0;
+  width: min(56rem, calc(100vw - 1rem));
+  max-width: none;
+  max-height: calc(100dvh - 1rem);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--text);
+}
+.formula-dialog::backdrop {
+  background: rgb(0 0 0 / 0.6);
+}
+html:has(.formula-dialog[open]) {
+  overflow: hidden;
+}
+.formula-dialog__inner {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-height: calc(100dvh - 1rem);
+  padding: 1rem;
+  overflow: auto;
+}
+.formula-dialog__inner > p {
+  margin: 0;
+}
+.formula-dialog__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+.formula-dialog__head h2 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+.formula-dialog__tools {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.formula-dialog__tex {
+  overflow: auto;
+  flex-shrink: 0;
+  padding: 0.75rem;
+  border-radius: 8px;
+  background: var(--surface-2);
+  font-size: calc(clamp(1.1rem, 4vw, 1.9rem) * var(--zoom, 1));
+}
+.formula-dialog__tex .tex-block {
+  font-size: 1em;
+  overflow: visible;
+}
+.formula-dialog__tex .katex-display {
+  margin: 0;
+}
+
+/* Legenda em cartões: usada no celular e no diálogo ampliado */
+.symbol-cards {
+  display: none;
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  gap: 0.5rem;
+}
+.symbol-cards--always {
+  display: grid;
+}
+.symbol-card {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  background: var(--surface-2);
+}
+.symbol-card dl {
+  margin: 0;
+  display: grid;
+  gap: 0.25rem;
+}
+.symbol-card dl > div {
+  display: grid;
+  grid-template-columns: 6.5rem minmax(0, 1fr);
+  gap: 0.5rem;
+  align-items: baseline;
+}
+.symbol-card dt {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+.symbol-card dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 480px) {
+  .symbol-cards {
+    display: grid;
+  }
+  .symbols-table {
+    display: none;
+  }
+}
 .table {
   border-collapse: collapse;
   width: 100%;

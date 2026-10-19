@@ -295,7 +295,7 @@ export const REVISAO: Exercise[] = [
     given: ['ρHg = 13 600 kg/m³; desce 0,200 m', 'ρóleo = 850 kg/m³; sobe 0,350 m', 'patm = 100 kPa'],
     asked: 'a) sinais; b) pA,man; c) pA,abs',
     concept: '“Caminhada” no manômetro: descer soma ρ·g·h, subir subtrai ρ·g·h.',
-    formulas: [String.raw`p_A = p_{atm} + \rho_{Hg}\, g\, (0{,}200) - \rho_{óleo}\, g\, (0{,}350)`],
+    formulas: [String.raw`\begin{aligned} p_A &= p_{atm} + \rho_{Hg}\, g\, (0{,}200) \\ &\quad - \rho_{óleo}\, g\, (0{,}350) \end{aligned}`],
     conversions: ['100 kPa = 100 000 Pa'],
     substitution: ['+13 600 × 9,81 × 0,200', '−850 × 9,81 × 0,350'],
     steps: [

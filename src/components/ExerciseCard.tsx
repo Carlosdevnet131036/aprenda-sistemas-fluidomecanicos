@@ -4,6 +4,7 @@ import { checkNumericAnswer, type CheckResult } from '../lib/answerCheck';
 import { getUnit, parseNumber } from '../lib/units';
 import { moduleHref } from '../router';
 import { useProgress } from '../progressContext';
+import { FormulaZoom } from './FormulaZoom';
 import { Tex } from './Tex';
 
 export function ExerciseCard({ ex, open: openInit = false }: { ex: Exercise; open?: boolean }) {
@@ -140,7 +141,10 @@ function ExerciseBody({ ex }: { ex: Exercise }) {
           {ex.formulas.length > 0 && (
             <Row label="Fórmula">
               {ex.formulas.map((f) => (
-                <Tex key={f} tex={f} block />
+                <div key={f} className="formula-line">
+                  <Tex tex={f} block />
+                  <FormulaZoom tex={f} title={`Fórmula — ${ex.title}`} />
+                </div>
               ))}
             </Row>
           )}

@@ -7,6 +7,7 @@ import { moduleHref } from '../router';
 import { useProgress } from '../progressContext';
 import { Diagram } from './Diagrams';
 import { ExerciseCard } from './ExerciseCard';
+import { FormulaZoom, SymbolCards } from './FormulaZoom';
 import { Quiz } from './Quiz';
 import { Rich } from './Rich';
 import { Tex } from './Tex';
@@ -57,8 +58,12 @@ function BlockView({ b }: { b: Block }) {
         <div className="formula">
           {b.caption && <p className="formula__caption">{b.caption}</p>}
           <Tex tex={b.tex} block />
+          <div className="formula__tools">
+            <FormulaZoom tex={b.tex} title={b.caption} symbols={b.symbols} />
+          </div>
+          {b.symbols && <SymbolCards symbols={b.symbols} />}
           {b.symbols && (
-            <div className="table-wrap symbols-wrap" tabIndex={0} role="region" aria-label="Símbolos da fórmula">
+            <div className="table-wrap symbols-wrap symbols-table" tabIndex={0} role="region" aria-label="Símbolos da fórmula">
               <table className="symbols">
                 <thead>
                   <tr>
