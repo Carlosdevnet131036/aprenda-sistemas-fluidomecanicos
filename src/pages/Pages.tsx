@@ -13,6 +13,7 @@ import { ExerciseCard } from '../components/ExerciseCard';
 import { Feedback } from '../components/Quiz';
 import { Pitfalls } from '../components/Blocks';
 import { BackupPanel } from '../components/BackupPanel';
+import { NotesOverview } from '../components/NotesOverview';
 import { Tex } from '../components/Tex';
 import { useProgress } from '../progressContext';
 import { moduleHref } from '../router';
@@ -457,11 +458,16 @@ export function StudyPage() {
         <Pitfalls />
       </section>
 
+      <NotesOverview />
+
       <BackupPanel />
 
       <section className="panel panel--warn">
         <h2>Reiniciar dados de estudo</h2>
-        <p>Apaga aulas concluídas, exercícios resolvidos, erros, tentativas e checklist deste navegador.</p>
+        <p>
+          Apaga aulas concluídas, exercícios resolvidos, erros, tentativas e checklist deste navegador. Cadernos e destaques não são apagados aqui:
+          limpe-os dentro de cada caderno.
+        </p>
         {!confirm ? (
           <button type="button" className="btn btn--danger" onClick={() => setConfirm(true)}>
             Apagar meu progresso

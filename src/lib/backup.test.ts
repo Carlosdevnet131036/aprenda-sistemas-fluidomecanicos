@@ -27,10 +27,26 @@ describe('backup dos dados de estudo', () => {
     const r = parseBackup(JSON.stringify({ app: BACKUP_APP, version: 1, data: v1 }));
     expect(r.ok).toBe(true);
     if (!r.ok) return;
-    expect(r.state.version).toBe(2);
+    expect(r.state.version).toBe(3);
     expect(r.state.completedModules).toEqual(['m1']);
     expect(r.state.reviews['m1-01'].box).toBe(0);
     expect(r.state.attempts).toEqual([]); // 3 acertos em 2 questões é impossível
     expect(r.state.settings).toEqual(emptyProgress().settings);
+  });
+});
+
+describe('backup com anotações', () => {
+  it('leva cadernos e destaques junto; backup antigo não traz anotações', async () => {
+    const { createNotesStore } = await import('./notes');
+    const n = createNotesStore(null);
+    n.setText('ex:l01-q1', 'ρ = 1000 kg/m³');
+    n.setHighlights('l01-q1', [{ id: 'a', field: 'enunciado', start: 0, end: 2, color: 'dado', quote: 'Um' }]);
+    const r = parseBackup(exportBackup(createProgressStore(null).get(), new Date(), n.get()));
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.notes?.notebooks['ex:l01-q1'].text).toBe('ρ = 1000 kg/m³');
+    expect(r.summary).toMatchObject({ notebooks: 1, highlights: 1 });
+    const old = parseBackup(JSON.stringify({ app: BACKUP_APP, version: 2, data: { version: 2 } }));
+    expect(old.ok && old.notes).toBe(null);
   });
 });

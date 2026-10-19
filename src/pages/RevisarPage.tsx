@@ -8,6 +8,7 @@ import { getRevisao } from '../content/revisao';
 import { moduleLabel } from '../content/modules';
 import { ReviewSession } from '../components/ReviewSession';
 import { dueIds, mastery, nextDue, parseIntervals, weakestIds, type MasteryLevel } from '../lib/srs';
+import { STEP_LABEL } from '../components/MyResolution';
 import { recurringErrors, topicPerformance } from '../lib/stats';
 import { useProgress } from '../progressContext';
 import { moduleHref } from '../router';
@@ -51,6 +52,16 @@ export function RevisarPage() {
       return ex ? { id, title: ex.title, href: getExercise(id) ? `#/exercicios/${id}` : `#/revisao/${id}`, s } : null;
     })
     .filter((x): x is NonNullable<typeof x> => x !== null);
+
+  // Exercícios na revisão espaçada (autoavaliação de "Minha resolução").
+  const exDue = dueIds(state.exerciseReviews, now)
+    .map((id) => {
+      const ex = getExercise(id) ?? getRevisao(id);
+      const last = state.reflections[id]?.[state.reflections[id].length - 1];
+      return ex ? { id, title: ex.title, href: getExercise(id) ? `#/exercicios/${id}` : `#/revisao/${id}`, last } : null;
+    })
+    .filter((x): x is NonNullable<typeof x> => x !== null);
+  const exNext = nextDue(Object.fromEntries(Object.entries(state.exerciseReviews).filter(([id]) => !exDue.some((e) => e.id === id))));
 
   if (session) {
     return (
@@ -182,8 +193,39 @@ export function RevisarPage() {
         )}
       </section>
 
+      <section className="panel" aria-labelledby="rv-exs">
+        <h2 id="rv-exs">Exercícios para refazer hoje</h2>
+        <p className="muted small">
+          Vêm do registro “Minha resolução”: o que você não conseguiu volta hoje; o que resolveu volta em intervalos cada vez maiores.
+        </p>
+        {exDue.length === 0 ? (
+          <p className="empty">
+            Nenhum exercício vencido.{' '}
+            {exNext ? `Próximo em ${fmtDay(exNext)}.` : 'Ao conferir a resolução de um exercício, registre como foi para ele entrar aqui.'}
+          </p>
+        ) : (
+          <ul className="topic-list">
+            {exDue.map((e) => (
+              <li key={e.id}>
+                <div>
+                  <a href={e.href}>{e.title}</a>
+                  {e.last && (
+                    <span className="muted small">
+                      {' '}
+                      — último registro: {e.last.result === 'acertei' ? 'resolvido' : e.last.result === 'dificuldade' ? 'com dificuldade' : 'não conseguiu'}
+                      {e.last.difficultStep ? ` • etapa difícil: ${STEP_LABEL[e.last.difficultStep]}` : ''}
+                      {e.last.concept ? ` • revisar: ${e.last.concept}` : ''}
+                    </span>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
       <section className="panel" aria-labelledby="rv-ex">
-        <h2 id="rv-ex">Exercícios para refazer</h2>
+        <h2 id="rv-ex">Exercícios com resposta errada</h2>
         {exercisesToRedo.length === 0 ? (
           <p className="empty">Nenhum exercício com resposta errada pendente.</p>
         ) : (

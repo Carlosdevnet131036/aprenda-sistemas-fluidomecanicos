@@ -7,13 +7,16 @@
 //   2 — acrescenta estatísticas por questão e por exercício, revisão espaçada,
 //       histórico de revisões, atividades recentes, plano de estudos e
 //       configurações. Dados da versão 1 são migrados sem perda.
+//   3 — acrescenta "Minha resolução": autoavaliações dos exercícios e a
+//       revisão espaçada dos exercícios (separada da das questões V/F).
+//       Dados das versões 1 e 2 são migrados sem perda.
 import type { ModuleId } from '../content/types';
 import { applyAnswer, applyRating, dayKey, DEFAULT_INTERVALS, validateIntervals, type Rating, type ReviewCard } from './srs';
 
 export const STORAGE_KEY = 'asf-progresso-v1';
 /** Cópia do texto salvo quando ele não pôde ser lido (para não perder dados). */
 export const CORRUPT_KEY = 'asf-progresso-corrompido';
-export const DATA_VERSION = 2;
+export const DATA_VERSION = 3;
 
 export type QuizMode = 'aprendizagem' | 'avaliacao' | 'simulado';
 
@@ -60,6 +63,25 @@ export interface Activity {
   href: string;
 }
 
+/** Etapas da resolução oficial que o estudante pode avaliar. */
+export type SolutionStep = 'dados' | 'formula' | 'conversoes' | 'substituicao' | 'calculo' | 'resultado' | 'interpretacao';
+export const SOLUTION_STEPS: SolutionStep[] = ['dados', 'formula', 'conversoes', 'substituicao', 'calculo', 'resultado', 'interpretacao'];
+export type StepMark = 'entendi' | 'dificuldade' | 'revisar';
+export type SelfResult = 'acertei' | 'dificuldade' | 'errei';
+
+/** Registro de "Minha resolução" depois de comparar com a resolução oficial. */
+export interface Reflection {
+  date: string;
+  /** autoavaliação do estudante */
+  result: SelfResult;
+  steps: Partial<Record<SolutionStep, StepMark>>;
+  difficultStep: SolutionStep | '';
+  concept: string;
+  note: string;
+  /** resultado do corretor numérico na hora do registro (só quando há critério verificável) */
+  autoCheck: 'correto' | 'incorreto' | null;
+}
+
 export interface StudyPlanSettings {
   enabled: boolean;
   /** AAAA-MM-DD informado pelo estudante */
@@ -82,7 +104,7 @@ export interface Settings {
 }
 
 export interface ProgressState {
-  version: 2;
+  version: 3;
   completedModules: ModuleId[];
   visitedModules: ModuleId[];
   solvedExercises: string[];
@@ -97,15 +119,20 @@ export interface ProgressState {
   activity: Activity[];
   plan: StudyPlanSettings | null;
   settings: Settings;
+  /** revisão espaçada dos exercícios, alimentada pela autoavaliação de "Minha resolução" */
+  exerciseReviews: Record<string, ReviewCard>;
+  /** exercício → registros de "Minha resolução", do mais antigo ao mais recente */
+  reflections: Record<string, Reflection[]>;
 }
 
 const MAX_ATTEMPTS = 50;
 const MAX_LOG = 300;
 const MAX_ACTIVITY = 20;
+const MAX_REFLECTIONS = 10;
 
 export function emptyProgress(): ProgressState {
   return {
-    version: 2,
+    version: 3,
     completedModules: [],
     visitedModules: [],
     solvedExercises: [],
@@ -119,6 +146,8 @@ export function emptyProgress(): ProgressState {
     activity: [],
     plan: null,
     settings: { srsIntervals: [...DEFAULT_INTERVALS] },
+    exerciseReviews: {},
+    reflections: {},
   };
 }
 
@@ -160,7 +189,7 @@ export function sanitize(raw: unknown): ProgressState {
   const maxBox = settings.srsIntervals.length;
   const wrongQuestions = entries(r.wrongQuestions, (v) => (isNum(v) && v > 0 ? Math.floor(v) : null));
 
-  let reviews = entries<ReviewCard>(r.reviews, (v) =>
+  const card = (v: unknown): ReviewCard | null =>
     isObj(v) && isNum(v.box) && isDay(v.due)
       ? {
           box: Math.max(0, Math.min(maxBox, Math.floor(v.box))),
@@ -169,10 +198,10 @@ export function sanitize(raw: unknown): ProgressState {
           reviews: isNum(v.reviews) ? Math.max(0, Math.floor(v.reviews)) : 0,
           lapses: isNum(v.lapses) ? Math.max(0, Math.floor(v.lapses)) : 0,
         }
-      : null,
-  );
+      : null;
+  let reviews = entries<ReviewCard>(r.reviews, card);
   // Migração v1 → v2: cada questão errada entra na revisão espaçada na caixa 0.
-  if (r.version !== 2 && Object.keys(reviews).length === 0) {
+  if (!(isNum(r.version) && r.version >= 2) && Object.keys(reviews).length === 0) {
     const today = dayKey(new Date());
     reviews = Object.fromEntries(Object.entries(wrongQuestions).map(([id, n]) => [id, { box: 0, due: today, lastAt: '', reviews: n, lapses: n }]));
   }
@@ -192,7 +221,7 @@ export function sanitize(raw: unknown): ProgressState {
       : null;
 
   return {
-    version: 2,
+    version: 3,
     completedModules: modules(r.completedModules),
     visitedModules: modules(r.visitedModules),
     solvedExercises: [...new Set(strArr(r.solvedExercises))],
@@ -228,6 +257,30 @@ export function sanitize(raw: unknown): ProgressState {
       : [],
     plan,
     settings,
+    exerciseReviews: entries<ReviewCard>(r.exerciseReviews, card),
+    reflections: entries<Reflection[]>(r.reflections, (v) => {
+      const list = Array.isArray(v) ? v.map(sanitizeReflection).filter((x): x is Reflection => x !== null).slice(-MAX_REFLECTIONS) : [];
+      return list.length ? list : null;
+    }),
+  };
+}
+
+const RESULTS: SelfResult[] = ['acertei', 'dificuldade', 'errei'];
+const MARKS: StepMark[] = ['entendi', 'dificuldade', 'revisar'];
+
+function sanitizeReflection(v: unknown): Reflection | null {
+  if (!isObj(v) || !isStr(v.date) || !RESULTS.includes(v.result as SelfResult)) return null;
+  const steps: Partial<Record<SolutionStep, StepMark>> = {};
+  const raw = v.steps;
+  if (isObj(raw)) for (const k of SOLUTION_STEPS) if (MARKS.includes(raw[k] as StepMark)) steps[k] = raw[k] as StepMark;
+  return {
+    date: v.date,
+    result: v.result as SelfResult,
+    steps,
+    difficultStep: SOLUTION_STEPS.includes(v.difficultStep as SolutionStep) ? (v.difficultStep as SolutionStep) : '',
+    concept: isStr(v.concept) ? v.concept.slice(0, 300) : '',
+    note: isStr(v.note) ? v.note.slice(0, 2000) : '',
+    autoCheck: v.autoCheck === 'correto' || v.autoCheck === 'incorreto' ? v.autoCheck : null,
   };
 }
 
@@ -407,7 +460,37 @@ export function createProgressStore(storage: StorageLike | null = defaultStorage
     setIntervals(intervals: number[]) {
       const err = validateIntervals(intervals);
       if (err) throw new Error(err);
-      update((s) => ({ ...s, settings: { ...s.settings, srsIntervals: [...intervals] }, reviews: clampBoxes(s.reviews, intervals.length) }));
+      update((s) => ({
+        ...s,
+        settings: { ...s.settings, srsIntervals: [...intervals] },
+        reviews: clampBoxes(s.reviews, intervals.length),
+        exerciseReviews: clampBoxes(s.exerciseReviews, intervals.length),
+      }));
+    },
+    /**
+     * Registra a autoavaliação de "Minha resolução" e agenda o exercício na
+     * revisão espaçada: resolveu → sobe uma caixa; resolveu com dificuldade
+     * (ou marcou alguma etapa para revisar) → não sobe (mínimo caixa 1);
+     * não conseguiu → caixa 0, volta hoje.
+     */
+    recordReflection(exerciseId: string, r: Omit<Reflection, 'date'>, label: string, href: string) {
+      update((s) => {
+        const now = clock();
+        const needsReview = Object.values(r.steps).some((m) => m === 'revisar');
+        const prev = s.exerciseReviews[exerciseId];
+        const card =
+          r.result === 'errei'
+            ? applyRating(prev, false, 'dificil', now, s.settings.srsIntervals)
+            : applyRating(prev, true, r.result === 'dificuldade' || needsReview ? 'dificil' : 'media', now, s.settings.srsIntervals);
+        const entry: Reflection = { ...r, date: now.toISOString() };
+        const word = r.result === 'acertei' ? 'resolvi' : r.result === 'dificuldade' ? 'resolvi com dificuldade' : 'não consegui';
+        return {
+          ...s,
+          exerciseReviews: { ...s.exerciseReviews, [exerciseId]: card },
+          reflections: { ...s.reflections, [exerciseId]: [...(s.reflections[exerciseId] ?? []), entry].slice(-MAX_REFLECTIONS) },
+          activity: withActivity(s, { kind: 'exercicio', label: `Minha resolução — ${label}: ${word}`, href }),
+        };
+      });
     },
     setPlan(plan: StudyPlanSettings | null) {
       update((s) => ({ ...s, plan }));

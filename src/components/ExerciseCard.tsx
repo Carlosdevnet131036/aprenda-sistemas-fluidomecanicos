@@ -1,11 +1,16 @@
-import { useId, useState, type ReactNode } from 'react';
+import { useId, useRef, useState, type ReactNode, type RefObject } from 'react';
 import type { Exercise } from '../content/types';
 import { checkNumericAnswer, type CheckResult } from '../lib/answerCheck';
+import { exerciseNotebookKey } from '../lib/notes';
+import type { SolutionStep, StepMark } from '../lib/progress';
 import { getUnit, parseNumber } from '../lib/units';
 import { moduleHref } from '../router';
 import { useProgress } from '../progressContext';
 import { AnswerComparison, AttemptHistory, GuidedSolution } from './ExerciseExtras';
 import { FormulaZoom } from './FormulaZoom';
+import { useHighlighter } from './Highlighter';
+import { NotebookSnapshot, ReflectionForm, StepMarkControl } from './MyResolution';
+import { NotebookButton, NotebookHost } from './Notebook';
 import { Tex } from './Tex';
 
 export function ExerciseCard({ ex, open: openInit = false }: { ex: Exercise; open?: boolean }) {
@@ -13,7 +18,16 @@ export function ExerciseCard({ ex, open: openInit = false }: { ex: Exercise; ope
   const [state] = useProgress();
   const solved = state.solvedExercises.includes(ex.id);
   const [round, setRound] = useState(0);
+  // A resolução oficial fica oculta até o estudante pedir ("Conferir resolução").
+  const [showSolution, setShowSolution] = useState(false);
+  const solutionRef = useRef<HTMLDivElement>(null);
   const bodyId = useId();
+  const nbKey = exerciseNotebookKey(ex.id);
+
+  function checkSolution() {
+    setShowSolution(true);
+    requestAnimationFrame(() => solutionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+  }
   return (
     <article className={`exercise ${open ? 'exercise--open' : ''}`}>
       <button type="button" className="exercise__head" aria-expanded={open} aria-controls={bodyId} onClick={() => setOpen((o) => !o)}>
@@ -25,18 +39,65 @@ export function ExerciseCard({ ex, open: openInit = false }: { ex: Exercise; ope
       </button>
       {open && (
         <div id={bodyId} className="exercise__body">
-          <ExerciseBody key={round} ex={ex} onRestart={() => setRound((r) => r + 1)} />
+          <ExerciseBody
+            key={round}
+            ex={ex}
+            nbKey={nbKey}
+            showSolution={showSolution}
+            setShowSolution={setShowSolution}
+            solutionRef={solutionRef}
+            onRestart={() => {
+              // refazer limpa resposta, dicas e resolução; caderno e destaques ficam
+              setShowSolution(false);
+              setRound((r) => r + 1);
+            }}
+          />
         </div>
+      )}
+      {open && (
+        <NotebookHost
+          nbKey={nbKey}
+          footer={
+            <div className="notebook__check">
+              {showSolution ? (
+                <>
+                  <p className="small">A resolução oficial está aberta no exercício: compare etapa por etapa e registre como foi.</p>
+                  <button type="button" className="btn btn--ghost btn--sm" onClick={checkSolution}>
+                    Ir para a resolução
+                  </button>
+                </>
+              ) : (
+                <>
+                  <p className="small">Terminou? Compare com a resolução oficial — suas anotações continuam aqui.</p>
+                  <button type="button" className="btn btn--sm" onClick={checkSolution}>
+                    Conferir resolução
+                  </button>
+                </>
+              )}
+            </div>
+          }
+        />
       )}
     </article>
   );
 }
 
-function ExerciseBody({ ex, onRestart }: { ex: Exercise; onRestart: () => void }) {
+interface BodyProps {
+  ex: Exercise;
+  nbKey: string;
+  showSolution: boolean;
+  setShowSolution: (fn: (s: boolean) => boolean) => void;
+  solutionRef: RefObject<HTMLDivElement>;
+  onRestart: () => void;
+}
+
+function ExerciseBody({ ex, nbKey, showSolution, setShowSolution, solutionRef, onRestart }: BodyProps) {
   const [state, progress] = useProgress();
   const [hints, setHints] = useState(0);
-  const [showSolution, setShowSolution] = useState(false);
   const [guided, setGuided] = useState(false);
+  const [marks, setMarks] = useState<Partial<Record<SolutionStep, StepMark>>>({});
+  const hl = useHighlighter(ex);
+  const markOf = (step: SolutionStep) => <StepMarkControl step={step} value={marks[step]} onChange={(m) => setMarks((x) => ({ ...x, [step]: m }))} />;
   const solved = state.solvedExercises.includes(ex.id);
   const [value, setValue] = useState('');
   const [unit, setUnit] = useState(ex.answer?.units[0] ?? '');
@@ -53,16 +114,27 @@ function ExerciseBody({ ex, onRestart }: { ex: Exercise; onRestart: () => void }
 
   return (
     <>
-      <p className="exercise__statement">{ex.statement}</p>
-      <div className="grid2">
-        <div>
-          <h5>Dados fornecidos</h5>
-          <ul className="data-list">{ex.given.map((g) => <li key={g}>{g}</li>)}</ul>
+      <div className="exercise__tools">
+        <NotebookButton nb={{ key: nbKey, title: ex.title, kind: 'exercicio' }} />
+      </div>
+      <div ref={hl.rootRef} className="exercise__text">
+        {hl.toolbar}
+        <p className="exercise__statement">{hl.renderField('enunciado', ex.statement)}</p>
+        <div className="grid2">
+          <div>
+            <h5>Dados fornecidos</h5>
+            <ul className="data-list">
+              {ex.given.map((g, i) => (
+                <li key={g}>{hl.renderField(`dado:${i}`, g)}</li>
+              ))}
+            </ul>
+          </div>
+          <div>
+            <h5>Pede-se</h5>
+            <p>{hl.renderField('pede', ex.asked)}</p>
+          </div>
         </div>
-        <div>
-          <h5>Pede-se</h5>
-          <p>{ex.asked}</p>
-        </div>
+        {hl.status}
       </div>
 
       {ex.answer && (
@@ -74,7 +146,7 @@ function ExerciseBody({ ex, onRestart }: { ex: Exercise; onRestart: () => void }
           }}
         >
           <label htmlFor={inputId}>
-            Tente resolver no papel e digite sua resposta para <strong>{ex.answer.label}</strong>:
+            Resolva no caderno de cálculos (ou no papel) e digite sua resposta para <strong>{ex.answer.label}</strong>:
           </label>
           <div className="attempt__row">
             <input
@@ -116,7 +188,7 @@ function ExerciseBody({ ex, onRestart }: { ex: Exercise; onRestart: () => void }
         </form>
       )}
       {!ex.answer && !showSolution && (
-        <p className="muted small">Questão conceitual: escreva sua resposta no papel antes de abrir a resolução.</p>
+        <p className="muted small">Questão conceitual: escreva sua resposta no caderno (ou no papel) antes de conferir a resolução.</p>
       )}
 
       <div className="hints">
@@ -135,7 +207,7 @@ function ExerciseBody({ ex, onRestart }: { ex: Exercise; onRestart: () => void }
             {guided ? 'Fechar roteiro' : 'Resolver passo a passo'}
           </button>
           <button type="button" className="btn btn--ghost" onClick={() => setShowSolution((s) => !s)} aria-expanded={showSolution}>
-            {showSolution ? 'Esconder resolução' : 'Ver resolução completa'}
+            {showSolution ? 'Esconder resolução' : 'Conferir resolução'}
           </button>
           {(check || hints > 0 || showSolution || guided) && (
             <button type="button" className="btn btn--link" onClick={onRestart} title="Limpa resposta, dicas e resolução; seu progresso salvo é mantido">
@@ -153,10 +225,20 @@ function ExerciseBody({ ex, onRestart }: { ex: Exercise; onRestart: () => void }
       {guided && <GuidedSolution ex={ex} onClose={() => setGuided(false)} />}
 
       {showSolution && (
-        <div className="solution">
+        <div className="solution" ref={solutionRef} tabIndex={-1} aria-label="Resolução oficial">
+          <NotebookSnapshot ex={ex} />
+          <p className="solution__intro small muted">
+            Resolução oficial. Marque cada etapa como “Entendi”, “Tive dificuldade” ou “Preciso revisar” e registre no fim como foi.
+          </p>
+          <Row label="Dados e incógnita" mark={markOf('dados')}>
+            <ul>{ex.given.map((g) => <li key={g}>{g}</li>)}</ul>
+            <p>
+              <strong>Pede-se:</strong> {ex.asked}
+            </p>
+          </Row>
           <Row label="Conceito">{ex.concept}</Row>
           {ex.formulas.length > 0 && (
-            <Row label="Fórmula">
+            <Row label="Fórmula" mark={markOf('formula')}>
               {ex.formulas.map((f) => (
                 <div key={f} className="formula-line">
                   <Tex tex={f} block />
@@ -165,15 +247,27 @@ function ExerciseBody({ ex, onRestart }: { ex: Exercise; onRestart: () => void }
               ))}
             </Row>
           )}
-          {ex.conversions.length > 0 && <Row label="Conversões">{ex.conversions.join(' • ')}</Row>}
-          {ex.substitution.length > 0 && <Row label="Substituição">{ex.substitution.join(' • ')}</Row>}
-          <Row label="Cálculo">
-            <ol className="steps">{ex.steps.map((s) => <li key={s}>{s}</li>)}</ol>
-          </Row>
-          <Row label="Resultado">
+          {ex.conversions.length > 0 && (
+            <Row label="Conversões" mark={markOf('conversoes')}>
+              {ex.conversions.join(' • ')}
+            </Row>
+          )}
+          {ex.substitution.length > 0 && (
+            <Row label="Substituição" mark={markOf('substituicao')}>
+              {ex.substitution.join(' • ')}
+            </Row>
+          )}
+          {ex.steps.length > 0 && (
+            <Row label="Cálculo" mark={markOf('calculo')}>
+              <ol className="steps">{ex.steps.map((s) => <li key={s}>{s}</li>)}</ol>
+            </Row>
+          )}
+          <Row label="Resultado" mark={markOf('resultado')}>
             <strong>{ex.result}</strong>
           </Row>
-          <Row label="Interpretação">{ex.interpretation}</Row>
+          <Row label="Interpretação" mark={markOf('interpretacao')}>
+            {ex.interpretation}
+          </Row>
           <Row label="Erros comuns">
             <ul>{ex.mistakes.map((m) => <li key={m}>{m}</li>)}</ul>
           </Row>
@@ -188,6 +282,7 @@ function ExerciseBody({ ex, onRestart }: { ex: Exercise; onRestart: () => void }
               Entendi — marcar como resolvido
             </button>
           )}
+          <ReflectionForm ex={ex} marks={marks} href={exerciseHref(ex.id)} />
         </div>
       )}
     </>
@@ -196,11 +291,14 @@ function ExerciseBody({ ex, onRestart }: { ex: Exercise; onRestart: () => void }
 
 const exerciseHref = (id: string) => (id.startsWith('rev-') ? `#/revisao/${id}` : `#/exercicios/${id}`);
 
-function Row({ label, children }: { label: string; children: ReactNode }) {
+function Row({ label, children, mark }: { label: string; children: ReactNode; mark?: ReactNode }) {
   return (
     <div className="sol-row">
       <div className="sol-row__label">{label}</div>
-      <div className="sol-row__body">{children}</div>
+      <div className="sol-row__body">
+        {children}
+        {mark}
+      </div>
     </div>
   );
 }

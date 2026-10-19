@@ -7,7 +7,7 @@ Plataforma de estudo para a A1, construída a partir de `Revisao_A1_Sistemas_Flu
 - **Sem instalar nada:** gere com `npm run build` e abra `dist/index.html` com dois cliques. É um arquivo único (≈ 2,3 MB), funciona offline e pode ser copiado para o celular.
 - **GitHub Pages:** `npm run build:pages` gera `dist-pages/` com arquivos separados (≈ 260 kB compactados no primeiro acesso, e as fontes do KaTeX só são baixadas quando usadas). É o build que o workflow publica.
 - **Desenvolvimento:** `npm install`, depois `npm run dev`.
-- **Verificações:** `npm test` (190 testes: regras, conteúdo e telas), `npm run typecheck`, `npm run build`, `npm run build:pages`.
+- **Verificações:** `npm test` (222 testes: regras, conteúdo e telas), `npm run typecheck`, `npm run build`, `npm run build:pages`.
 
 ## O que tem
 
@@ -20,20 +20,25 @@ Plataforma de estudo para a A1, construída a partir de `Revisao_A1_Sistemas_Flu
 | Simulado | Prova com tempo, uma questão por vez, marcação para revisar, retomada após recarregar, entrega automática ao fim do tempo e revisão comentada; modo aprendizagem separado |
 | Laboratório | 15 calculadoras (incluindo prensa hidráulica e cilindro hidráulico) + 2 laboratórios interativos, com fenômeno, condições de uso, conversões, passos, resultado, significado e alertas de valores suspeitos |
 | Exercícios | 39 exercícios (Lista 01, Lista da Aula 03, Aula 5, slides) + 15 da lista de revisão, com 3 dicas progressivas, roteiro guiado em 9 passos, verificação de valor + sinal + unidade, comparação com o esperado, histórico de tentativas e filtros por módulo, assunto e situação |
+| Marca-texto | Em cada exercício: selecione um trecho do enunciado, dos dados ou do “pede-se” e escolha amarelo (dados), rosa (incógnita) ou verde (condições); remova um destaque clicando nele ou limpe todos com confirmação |
+| Caderno de cálculos | Um caderno por exercício e um caderno geral por módulo, em painel lateral (celular: folha que sobe da base). Modo texto (desfazer/refazer, roteiro Dados → Resultado, símbolos, copiar, folha pautada ou quadriculada) e modo manuscrito (mouse, dedo ou caneta; cores, espessuras, borracha, desfazer, mais espaço). Salva sozinho |
+| Minha resolução | A resolução oficial só aparece em “Conferir resolução”; o caderno aparece ao lado para comparar; cada etapa pode ser marcada (entendi / tive dificuldade / preciso revisar) e a autoavaliação vai para o histórico e para a revisão espaçada dos exercícios |
 | Quiz V/F | 111 afirmações em 3 níveis; modo aprendizagem e modo avaliação (sem correção até a entrega) |
 | Consulta | Formulário pesquisável, glossário (52 termos), conversor de unidades, 12 pegadinhas, checklist da véspera |
-| Meu estudo | Progresso por módulo, tentativas, revisão de erros, backup (exportar/importar JSON) e botão para apagar os dados |
+| Meu estudo | Progresso por módulo, tentativas, revisão de erros, lista das anotações, backup (exportar/importar JSON, com anotações) e botão para apagar os dados |
 
 ## Dados salvos
 
-Tudo fica no `localStorage` do navegador (chave `asf-progresso-v1`), sem cadastro nem internet. A estrutura é versionada (`version: 2`); dados da versão 1 são migrados automaticamente. Se o conteúdo salvo estiver ilegível, ele é copiado para `asf-progresso-corrompido` antes de recomeçar. Em **Meu estudo** é possível exportar um backup `.json` e importá-lo depois (o arquivo é validado e a importação pede confirmação). O simulado em andamento fica em `sessionStorage` para sobreviver a um recarregar.
+Tudo fica no `localStorage` do navegador (chave `asf-progresso-v1`), sem cadastro nem internet. A estrutura é versionada (`version: 3`); dados das versões 1 e 2 são migrados automaticamente. Se o conteúdo salvo estiver ilegível, ele é copiado para `asf-progresso-corrompido` antes de recomeçar. Em **Meu estudo** é possível exportar um backup `.json` e importá-lo depois (o arquivo é validado e a importação pede confirmação). O simulado em andamento fica em `sessionStorage` para sobreviver a um recarregar.
+
+As anotações ficam numa chave própria, `asf-anotacoes-v1` (destaques por id do exercício, cadernos `ex:<id>` e `mod:<módulo>`, preferências de folha e modo). Cada destaque guarda a posição e uma cópia do trecho: se o enunciado mudar, o trecho é conferido antes de restaurar (reposicionado se aparece uma única vez, senão descartado com aviso). A escrita à mão guarda traços vetoriais numa folha de largura fixa e só é gravada depois de uma pausa, nunca a cada movimento. Sem espaço no navegador, as anotações ficam na memória da aba e o caderno avisa, com um botão para tentar de novo. Os simulados usam só questões V/F, então não há caderno de simulado que possa se misturar com o dos exercícios.
 
 ## Arquitetura
 
 - `src/content/` — dados didáticos (módulos, questões, exercícios, glossário). Nenhuma regra de correção aqui.
-- `src/lib/` — regras puras e testadas: `physics.ts` (fórmulas), `units.ts`, `answerCheck.ts`, `quiz.ts`, `calculators.ts`, `progress.ts` (dados v2), `srs.ts` (revisão espaçada), `stats.ts` (indicadores), `plan.ts` (plano de estudos), `recommend.ts`, `exam.ts` (simulado), `backup.ts`.
+- `src/lib/` — regras puras e testadas: `physics.ts` (fórmulas), `units.ts`, `answerCheck.ts`, `quiz.ts`, `calculators.ts`, `progress.ts` (dados v2), `srs.ts` (revisão espaçada), `stats.ts` (indicadores), `plan.ts` (plano de estudos), `recommend.ts`, `exam.ts` (simulado), `backup.ts`, `highlights.ts` (marca-texto), `notes.ts` (anotações), `ink.ts` (escrita à mão), `history.ts` (desfazer/refazer).
 - `src/components/`, `src/pages/` — interface (React + TypeScript, KaTeX para fórmulas).
-- `src/test/` — testes de tela com Testing Library em jsdom (quiz, simulado, revisão, exercício, ampliar fórmula, navegação, painel e plano).
+- `src/test/` — testes de tela com Testing Library em jsdom (quiz, simulado, revisão, exercício, ampliar fórmula, navegação, painel, plano, marca-texto, caderno e Minha resolução). `src/test/storage.ts` instala um localStorage em memória, porque o do Node 25 se sobrepõe ao do jsdom.
 
 ## Auditoria do material
 

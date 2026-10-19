@@ -1,6 +1,9 @@
 // Backup dos dados de estudo: exportação para um arquivo JSON e importação
 // com validação. O arquivo leva um identificador do aplicativo e a versão da
 // estrutura; versões antigas são migradas e versões mais novas são recusadas.
+// Desde a versão 3 o arquivo também leva as anotações (destaques e cadernos);
+// backups antigos, sem anotações, mantêm as anotações atuais do navegador.
+import { notesSummary, sanitizeNotes, type NotesState } from './notes';
 import { DATA_VERSION, sanitize, type ProgressState } from './progress';
 
 export const BACKUP_APP = 'aprenda-sistemas-fluidomecanicos';
@@ -10,10 +13,11 @@ export interface BackupFile {
   version: number;
   exportedAt: string;
   data: ProgressState;
+  notes?: NotesState;
 }
 
-export function exportBackup(state: ProgressState, now: Date = new Date()): string {
-  const file: BackupFile = { app: BACKUP_APP, version: DATA_VERSION, exportedAt: now.toISOString(), data: state };
+export function exportBackup(state: ProgressState, now: Date = new Date(), notes?: NotesState): string {
+  const file: BackupFile = { app: BACKUP_APP, version: DATA_VERSION, exportedAt: now.toISOString(), data: state, ...(notes ? { notes } : {}) };
   return JSON.stringify(file, null, 2);
 }
 
@@ -28,11 +32,15 @@ export interface BackupSummary {
   answeredQuestions: number;
   attempts: number;
   hasPlan: boolean;
+  /** null quando o backup não traz anotações */
+  notebooks: number | null;
+  highlights: number | null;
 }
 
-export type ImportResult = { ok: true; state: ProgressState; summary: BackupSummary } | { ok: false; error: string };
+export type ImportResult = { ok: true; state: ProgressState; notes: NotesState | null; summary: BackupSummary } | { ok: false; error: string };
 
-const MAX_SIZE = 2_000_000; // 2 MB: muito acima de qualquer backup real
+// 10 MB: acima de qualquer backup real (o próprio localStorage guarda cerca de 5 MB)
+const MAX_SIZE = 10_000_000;
 
 export function parseBackup(text: string): ImportResult {
   if (text.length > MAX_SIZE) return { ok: false, error: 'Arquivo grande demais para ser um backup deste site.' };
@@ -49,9 +57,12 @@ export function parseBackup(text: string): ImportResult {
   if (f.version > DATA_VERSION) return { ok: false, error: `O backup foi criado por uma versão mais nova do site (estrutura ${f.version}). Atualize a página antes de importar.` };
   if (!f.data || typeof f.data !== 'object') return { ok: false, error: 'O backup não contém dados de estudo.' };
   const state = sanitize({ ...(f.data as object), version: (f.data as { version?: number }).version ?? f.version });
+  const notes = f.notes && typeof f.notes === 'object' ? sanitizeNotes(f.notes) : null;
+  const ns = notes ? notesSummary(notes) : null;
   return {
     ok: true,
     state,
+    notes,
     summary: {
       exportedAt: typeof f.exportedAt === 'string' ? f.exportedAt : '',
       completedModules: state.completedModules.length,
@@ -59,6 +70,8 @@ export function parseBackup(text: string): ImportResult {
       answeredQuestions: Object.keys(state.questionStats).length,
       attempts: state.attempts.length,
       hasPlan: state.plan !== null,
+      notebooks: ns ? ns.notebooks : null,
+      highlights: ns ? ns.highlights : null,
     },
   };
 }

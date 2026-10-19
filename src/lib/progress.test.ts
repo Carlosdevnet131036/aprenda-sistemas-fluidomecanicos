@@ -95,7 +95,7 @@ describe('progresso no navegador', () => {
     const st = memoryStorage();
     st.setItem(STORAGE_KEY, JSON.stringify({ version: 1, completedModules: ['m3'], wrongQuestions: { a: 1 }, solvedExercises: ['e1'] }));
     const s = createProgressStore(st);
-    expect(s.get().version).toBe(2);
+    expect(s.get().version).toBe(3);
     expect(s.get().completedModules).toEqual(['m3']);
     expect(s.get().reviews.a.box).toBe(0);
     expect(s.get().solvedExercises).toEqual(['e1']);
@@ -118,5 +118,44 @@ describe('progresso no navegador', () => {
     expect(() => s.setIntervals([5, 2])).toThrow();
     s.setIntervals([2, 4]);
     expect(s.get().settings.srsIntervals).toEqual([2, 4]);
+  });
+});
+
+describe('Minha resolução: histórico e revisão espaçada dos exercícios', () => {
+  const base = { steps: {}, difficultStep: '' as const, concept: '', note: '', autoCheck: null };
+  const day = (iso: string) => () => new Date(iso);
+  it('autoavaliação agenda o exercício: não conseguiu volta hoje; resolveu sobe de caixa', () => {
+    const s = createProgressStore(memoryStorage(), day('2026-10-19T12:00:00'));
+    s.recordReflection('l01-q6', { ...base, result: 'errei' }, 'Atuador', '#/exercicios/l01-q6');
+    expect(s.get().exerciseReviews['l01-q6']).toMatchObject({ box: 0, due: '2026-10-19' });
+    s.recordReflection('l01-q6', { ...base, result: 'acertei' }, 'Atuador', '#/exercicios/l01-q6');
+    expect(s.get().exerciseReviews['l01-q6']).toMatchObject({ box: 1, due: '2026-10-20' });
+    expect(s.get().reflections['l01-q6'].map((r) => r.result)).toEqual(['errei', 'acertei']);
+    expect(s.get().activity[0].label).toMatch(/Minha resolução — Atuador: resolvi/);
+    // as questões V/F não são afetadas
+    expect(s.get().reviews).toEqual({});
+  });
+  it('“com dificuldade” ou etapa marcada para revisar não sobe de caixa', () => {
+    const s = createProgressStore(memoryStorage(), day('2026-10-19T12:00:00'));
+    s.recordReflection('a', { ...base, result: 'acertei', steps: { formula: 'revisar' } }, 'A', '#/exercicios/a');
+    s.recordReflection('b', { ...base, result: 'dificuldade', difficultStep: 'conversoes' }, 'B', '#/exercicios/b');
+    expect(s.get().exerciseReviews.a.box).toBe(1);
+    expect(s.get().exerciseReviews.b.box).toBe(1);
+    expect(s.get().reflections.b[0]).toMatchObject({ difficultStep: 'conversoes', result: 'dificuldade' });
+  });
+  it('dados da versão 2 viram versão 3 sem perder nada', () => {
+    const st = memoryStorage();
+    st.setItem(STORAGE_KEY, JSON.stringify({ version: 2, solvedExercises: ['e1'], reviews: { q1: { box: 2, due: '2026-10-20', lastAt: '', reviews: 2, lapses: 0 } } }));
+    const s = createProgressStore(st);
+    expect(s.get()).toMatchObject({ version: 3, solvedExercises: ['e1'], exerciseReviews: {}, reflections: {} });
+    expect(s.get().reviews.q1.box).toBe(2);
+  });
+  it('registros corrompidos são descartados um a um', () => {
+    const r = sanitize({
+      version: 3,
+      reflections: { a: [{ date: 'x', result: 'acertei', steps: { formula: 'entendi', foo: 'entendi', calculo: 'talvez' } }, { date: 'y', result: 'nao' }] },
+    });
+    expect(r.reflections.a).toHaveLength(1);
+    expect(r.reflections.a[0].steps).toEqual({ formula: 'entendi' });
   });
 });

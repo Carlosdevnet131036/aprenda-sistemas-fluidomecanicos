@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import type { Module, Origin, Section, SectionKind } from '../content/types';
 import { MODULES } from '../content/modules';
 import { Blocks } from '../components/Blocks';
+import { NotebookButton, NotebookHost } from '../components/Notebook';
+import { moduleNotebookKey } from '../lib/notes';
 import { useProgress } from '../progressContext';
 import { moduleHref } from '../router';
 
@@ -86,6 +88,10 @@ export function ModulePage({ mod, sec }: { mod: Module; sec: string | null }) {
           <h1>{mod.title}</h1>
           <p className="lead">{mod.description}</p>
           <p className="muted small">Fonte: {mod.source}</p>
+          <div className="row">
+            <NotebookButton nb={{ key: moduleNotebookKey(mod.id), title: `Observações gerais — Módulo ${mod.num}: ${mod.short}`, kind: 'modulo' }} label="Caderno do módulo" />
+          </div>
+          <NotebookHost nbKey={moduleNotebookKey(mod.id)} />
         </header>
 
         {mod.sections.map((s) => (
