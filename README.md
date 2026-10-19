@@ -6,23 +6,31 @@ Plataforma de estudo para a A1, construída a partir de `Revisao_A1_Sistemas_Flu
 
 - **Sem instalar nada:** abra `dist/index.html` com dois cliques. É um arquivo único (≈ 2 MB), funciona offline e pode ser copiado para o celular.
 - **Desenvolvimento:** `npm install`, depois `npm run dev`.
-- **Verificações:** `npm test` (143 testes), `npm run typecheck`, `npm run build`.
+- **Verificações:** `npm test` (179 testes), `npm run typecheck`, `npm run build`.
 
 ## O que tem
 
 | Área | Conteúdo |
 |---|---|
 | Trilha | Módulos 0–7 em 10 etapas didáticas (introdução → resumo), com “Explique de outra forma” e o selo de origem de cada seção (material × complemento) |
-| Laboratório | 14 calculadoras com conversões, substituição, passos, resultado, significado e alertas |
-| Exercícios | 39 exercícios (Lista 01, Lista da Aula 03, Aula 5, slides) com 3 dicas progressivas e verificação de valor + sinal + unidade |
+| Painel | Próxima atividade recomendada, “continuar de onde parei”, aulas concluídas × domínio (acertos e questões dominadas), pontos fortes e fracos, visão por módulo e atividades recentes — só com dados reais |
+| Plano | Data da prova + minutos por dia + módulos prioritários → cronograma diário (revisão, teoria, exercícios, simulados), previsto × realizado, sessões atrasadas e ajustes de hoje pelo desempenho |
+| Revisões | Revisão espaçada (caixas de Leitner, intervalos configuráveis — padrão 1, 3, 7, 14, 30 dias), sessão rápida com autoavaliação fácil/média/difícil, assuntos com erros recorrentes e exercícios para refazer |
+| Simulado | Prova com tempo, uma questão por vez, marcação para revisar, retomada após recarregar, entrega automática ao fim do tempo e revisão comentada; modo aprendizagem separado |
+| Laboratório | 15 calculadoras (incluindo prensa hidráulica e cilindro hidráulico) + 2 laboratórios interativos, com fenômeno, condições de uso, conversões, passos, resultado, significado e alertas de valores suspeitos |
+| Exercícios | 39 exercícios (Lista 01, Lista da Aula 03, Aula 5, slides) + 15 da lista de revisão, com 3 dicas progressivas, roteiro guiado em 9 passos, verificação de valor + sinal + unidade, comparação com o esperado, histórico de tentativas e filtros por módulo, assunto e situação |
 | Quiz V/F | 111 afirmações em 3 níveis; modo aprendizagem e modo avaliação (sem correção até a entrega) |
 | Consulta | Formulário pesquisável, glossário (52 termos), conversor de unidades, 12 pegadinhas, checklist da véspera |
-| Meu estudo | Progresso por módulo, tentativas, revisão de erros e botão para apagar os dados |
+| Meu estudo | Progresso por módulo, tentativas, revisão de erros, backup (exportar/importar JSON) e botão para apagar os dados |
+
+## Dados salvos
+
+Tudo fica no `localStorage` do navegador (chave `asf-progresso-v1`), sem cadastro nem internet. A estrutura é versionada (`version: 2`); dados da versão 1 são migrados automaticamente. Se o conteúdo salvo estiver ilegível, ele é copiado para `asf-progresso-corrompido` antes de recomeçar. Em **Meu estudo** é possível exportar um backup `.json` e importá-lo depois (o arquivo é validado e a importação pede confirmação). O simulado em andamento fica em `sessionStorage` para sobreviver a um recarregar.
 
 ## Arquitetura
 
 - `src/content/` — dados didáticos (módulos, questões, exercícios, glossário). Nenhuma regra de correção aqui.
-- `src/lib/` — regras puras e testadas: `physics.ts` (fórmulas), `units.ts`, `answerCheck.ts`, `quiz.ts`, `calculators.ts`, `progress.ts`.
+- `src/lib/` — regras puras e testadas: `physics.ts` (fórmulas), `units.ts`, `answerCheck.ts`, `quiz.ts`, `calculators.ts`, `progress.ts` (dados v2), `srs.ts` (revisão espaçada), `stats.ts` (indicadores), `plan.ts` (plano de estudos), `recommend.ts`, `exam.ts` (simulado), `backup.ts`.
 - `src/components/`, `src/pages/` — interface (React + TypeScript, KaTeX para fórmulas).
 
 ## Auditoria do material

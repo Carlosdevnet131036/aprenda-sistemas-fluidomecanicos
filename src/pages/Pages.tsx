@@ -12,6 +12,7 @@ import { ManometerLab, NewtonianLab } from '../components/Labs';
 import { ExerciseCard } from '../components/ExerciseCard';
 import { Feedback } from '../components/Quiz';
 import { Pitfalls } from '../components/Blocks';
+import { BackupPanel } from '../components/BackupPanel';
 import { Tex } from '../components/Tex';
 import { useProgress } from '../progressContext';
 import { moduleHref } from '../router';
@@ -90,29 +91,47 @@ export function LabPage({ id }: { id?: string }) {
 }
 
 // ---------------- Exercícios ----------------
-export function ExercisesPage({ id }: { id?: string }) {
+type ExStatus = 'todos' | 'pendentes' | 'erro' | 'resolvidos';
+const STATUS_LABEL: Record<ExStatus, string> = { todos: 'Todos', pendentes: 'Não tentados', erro: 'Com erro, a refazer', resolvidos: 'Resolvidos' };
+
+export function ExercisesPage({ id, query }: { id?: string; query?: URLSearchParams }) {
   const [state] = useProgress();
-  const [filter, setFilter] = useState<ModuleId | 'todos'>('todos');
+  const fromQuery = query?.get('modulo');
+  const [filter, setFilter] = useState<ModuleId | 'todos'>(() => (MODULES.some((m) => m.id === fromQuery) ? (fromQuery as ModuleId) : 'todos'));
+  const [topic, setTopic] = useState('todos');
+  const [status, setStatus] = useState<ExStatus>('todos');
   const single = id ? getExercise(id) : undefined;
   if (single) {
     return (
       <div className="page page--narrow">
-        <nav className="crumbs">
+        <nav className="crumbs" aria-label="Você está em">
           <a href="#/exercicios">Exercícios</a> › <span aria-current="page">{single.title}</span>
         </nav>
+        <h1 className="sr-only">{single.title}</h1>
         <ExerciseCard ex={single} open />
       </div>
     );
   }
   const mods = MODULES.filter((m) => EXERCISES.some((e) => e.module === m.id));
-  const list = EXERCISES.filter((e) => filter === 'todos' || e.module === filter);
+  const sectionTitle = (e: (typeof EXERCISES)[number]) => MODULES.find((m) => m.id === e.module)?.sections.find((sec) => sec.id === e.section)?.title ?? 'Geral';
+  const byModule = EXERCISES.filter((e) => filter === 'todos' || e.module === filter);
+  const topics = [...new Set(byModule.map(sectionTitle))];
+  const activeTopic = topics.includes(topic) ? topic : 'todos';
+  const statusOf = (eid: string): Exclude<ExStatus, 'todos'> =>
+    state.solvedExercises.includes(eid) ? 'resolvidos' : Object.keys(state.exerciseStats[eid]?.errors ?? {}).length ? 'erro' : 'pendentes';
+  const list = byModule.filter((e) => (activeTopic === 'todos' || sectionTitle(e) === activeTopic) && (status === 'todos' || statusOf(e.id) === status));
   return (
     <div className="page page--narrow">
+      {id && (
+        <p className="callout callout--alerta" role="alert">
+          Exercício “{id}” não encontrado. Escolha um da lista abaixo.
+        </p>
+      )}
       <header className="page__head">
         <h1>Exercícios resolvidos</h1>
         <p className="lead">
-          Listas 01 e da Aula 03, exercícios da Aula 5 e dos slides. Tente resolver, peça dicas progressivas e só depois abra a resolução.{' '}
-          {countSolved(state.solvedExercises, EXERCISES.map((e) => e.id))} de {EXERCISES.length} resolvidos.
+          Listas 01 e da Aula 03, exercícios da Aula 5 e dos slides. Tente resolver, peça dicas progressivas, use o roteiro passo a passo e só depois abra a
+          resolução. {countSolved(state.solvedExercises, EXERCISES.map((e) => e.id))} de {EXERCISES.length} resolvidos.
         </p>
       </header>
       <div className="chips" role="group" aria-label="Filtrar por módulo">
@@ -125,9 +144,42 @@ export function ExercisesPage({ id }: { id?: string }) {
           </button>
         ))}
       </div>
-      {list.map((e) => (
-        <ExerciseCard key={e.id} ex={e} />
-      ))}
+      <div className="filters">
+        <label className="field">
+          <span className="field__label">Assunto</span>
+          <select value={activeTopic} onChange={(e) => setTopic(e.target.value)}>
+            <option value="todos">Todos os assuntos</option>
+            {topics.map((t) => (
+              <option key={t} value={t}>
+                {t}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="field">
+          <span className="field__label">Situação</span>
+          <select value={status} onChange={(e) => setStatus(e.target.value as ExStatus)}>
+            {(Object.keys(STATUS_LABEL) as ExStatus[]).map((k) => (
+              <option key={k} value={k}>
+                {STATUS_LABEL[k]}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+      <p className="muted small" aria-live="polite">
+        {list.length} exercício(s) nesta seleção. O material não classifica os exercícios por dificuldade, por isso não há esse filtro.
+      </p>
+      {list.length === 0 ? (
+        <p className="empty">
+          Nenhum exercício para esses filtros.{' '}
+          <button type="button" className="btn btn--link" onClick={() => (setFilter('todos'), setTopic('todos'), setStatus('todos'))}>
+            Limpar filtros
+          </button>
+        </p>
+      ) : (
+        list.map((e) => <ExerciseCard key={e.id} ex={e} />)
+      )}
     </div>
   );
 }
@@ -319,6 +371,12 @@ export function StudyPage() {
       <header className="page__head">
         <h1>Meu estudo</h1>
         <p className="lead">Seu progresso, os erros dos quizzes, os conceitos a revisar e as pegadinhas.</p>
+        {progress.loadIssue() === 'corrompido' && (
+          <p className="callout callout--erro" role="alert">
+            Os dados salvos neste navegador estavam ilegíveis e não puderam ser carregados. Uma cópia do conteúdo original foi guardada à parte; se você
+            tiver um backup, importe-o abaixo.
+          </p>
+        )}
         {!progress.isPersistent() && (
           <p className="callout callout--alerta">Este navegador não permite salvar dados (modo privado ou armazenamento bloqueado). O progresso será perdido ao fechar a página.</p>
         )}
@@ -383,7 +441,10 @@ export function StudyPage() {
                 <li key={q.id}>
                   <p className="quiz__statement small-statement">{q.statement}</p>
                   <p className="muted small">Errada {state.wrongQuestions[q.id]}×</p>
-                  <Feedback q={q} given={!q.answer} />
+                  <details className="reveal">
+                    <summary>Ver a correção (tente lembrar antes)</summary>
+                    <Feedback q={q} given={!q.answer} />
+                  </details>
                 </li>
               ))}
             </ol>
@@ -395,6 +456,8 @@ export function StudyPage() {
         <h2>As 12 pegadinhas do material</h2>
         <Pitfalls />
       </section>
+
+      <BackupPanel />
 
       <section className="panel panel--warn">
         <h2>Reiniciar dados de estudo</h2>

@@ -1,9 +1,8 @@
 import { MODULES } from '../content/modules';
 import { QUESTIONS } from '../content/questions';
-import { EXERCISES } from '../content/exercises';
 import { REVISAO, REVISAO_GROUPS } from '../content/revisao';
-import { countSolved } from '../lib/progress';
 import { useProgress } from '../progressContext';
+import { Dashboard } from '../components/Dashboard';
 import { moduleHref } from '../router';
 
 export function useOverall() {
@@ -14,50 +13,32 @@ export function useOverall() {
 }
 
 export function Home() {
-  const { done, total, pct, next, state } = useOverall();
-  const started = state.visitedModules.length > 0;
+  const { next, state } = useOverall();
+  const started = state.visitedModules.length > 0 || state.activity.length > 0 || Object.keys(state.questionStats).length > 0;
   return (
     <div className="home">
       <RevisaoBanner />
-      <section className="hero">
-        <div className="hero__text">
-          <p className="kicker">Revisão para a A1 • do zero à prova</p>
-          <h1>Aprenda Sistemas Fluidomecânicos</h1>
-          <p className="lead">
-            Nunca estudou o assunto ou está enferrujado? Sem problema. Aqui cada conceito é explicado desde o começo, com exemplos do dia a dia, fórmulas
-            explicadas símbolo por símbolo e exercícios resolvidos passo a passo.
-          </p>
-          <div className="row">
-            <a className="btn btn--big" href={moduleHref(next?.id ?? 'm0')}>
-              {started && next ? `Continuar: Módulo ${next.num}` : 'Começar a aprender'}
-            </a>
-            <a className="btn btn--ghost btn--big" href="#/quiz">
-              Testar meus conhecimentos
-            </a>
-          </div>
-        </div>
-        <div className="hero__progress" aria-label="Progresso geral">
-          <div className="score__ring score__ring--big" style={{ ['--pct' as string]: pct }}>
-            <span>{pct}%</span>
-          </div>
-          <p>
-            <strong>
-              {done} de {total}
-            </strong>{' '}
-            aulas concluídas
-          </p>
-          <p className="muted small">
-            {countSolved(state.solvedExercises, EXERCISES.map((e) => e.id))} de {EXERCISES.length} exercícios resolvidos
-          </p>
-          {next ? (
-            <p className="small">
-              Próximo passo: <a href={moduleHref(next.id)}>Módulo {next.num} — {next.short}</a>
+      {!started && (
+        <section className="hero">
+          <div className="hero__text">
+            <p className="kicker">Revisão para a A1 • do zero à prova</p>
+            <h1>Aprenda Sistemas Fluidomecânicos</h1>
+            <p className="lead">
+              Nunca estudou o assunto ou está enferrujado? Sem problema. Aqui cada conceito é explicado desde o começo, com exemplos do dia a dia, fórmulas
+              explicadas símbolo por símbolo e exercícios resolvidos passo a passo.
             </p>
-          ) : (
-            <p className="small">Trilha completa! Faça a avaliação final de novo para fixar.</p>
-          )}
-        </div>
-      </section>
+            <div className="row">
+              <a className="btn btn--big" href={moduleHref(next?.id ?? 'm0')}>
+                Começar a aprender
+              </a>
+              <a className="btn btn--ghost btn--big" href="#/quiz">
+                Testar meus conhecimentos
+              </a>
+            </div>
+          </div>
+        </section>
+      )}
+      <Dashboard asTitle={started} />
 
       <section aria-labelledby="learn-t">
         <h2 id="learn-t">O que você vai aprender</h2>

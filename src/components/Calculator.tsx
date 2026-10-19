@@ -24,6 +24,16 @@ export function Calculator({ def }: { def: CalculatorDef }) {
         <h3 id={`${uid}-t`}>{def.title}</h3>
         <p className="muted">{def.summary}</p>
         <Tex tex={def.tex} block />
+        <dl className="calc__about">
+          <div>
+            <dt>Fenômeno</dt>
+            <dd>{def.about}</dd>
+          </div>
+          <div>
+            <dt>Quando usar</dt>
+            <dd>{def.conditions}</dd>
+          </div>
+        </dl>
       </header>
       <div className="calc__grid">
         <div className="calc__inputs">

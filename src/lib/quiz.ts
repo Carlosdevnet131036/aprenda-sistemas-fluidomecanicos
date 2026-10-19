@@ -7,6 +7,8 @@ export type Answers = Record<string, boolean | undefined>;
 export interface QuizOptions {
   modules?: ModuleId[];
   levels?: QuizLevel[];
+  /** assuntos (campo `topic`); vazio = todos */
+  topics?: string[];
   count: number;
   seed?: number;
 }
@@ -32,9 +34,12 @@ export function shuffle<T>(items: T[], rand: () => number): T[] {
   return a;
 }
 
-export function filterBank(bank: Question[], opts: Pick<QuizOptions, 'modules' | 'levels'>): Question[] {
+export function filterBank(bank: Question[], opts: Pick<QuizOptions, 'modules' | 'levels' | 'topics'>): Question[] {
   return bank.filter(
-    (q) => (!opts.modules?.length || opts.modules.includes(q.module)) && (!opts.levels?.length || opts.levels.includes(q.level)),
+    (q) =>
+      (!opts.modules?.length || opts.modules.includes(q.module)) &&
+      (!opts.levels?.length || opts.levels.includes(q.level)) &&
+      (!opts.topics?.length || opts.topics.includes(q.topic)),
   );
 }
 

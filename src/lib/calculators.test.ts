@@ -93,3 +93,64 @@ describe('calculadoras do laboratório', () => {
     if (!neg.ok) expect(neg.errors[0]).toMatch(/negativo/);
   });
 });
+
+describe('calculadoras: descrição, casos-limite e novas fórmulas', () => {
+  it('toda calculadora descreve o fenômeno e as condições de uso', () => {
+    for (const c of CALCULATORS) {
+      expect(c.about.length, c.id).toBeGreaterThan(20);
+      expect(c.conditions.length, c.id).toBeGreaterThan(20);
+    }
+  });
+  it('entrada obrigatória vazia, texto inválido ou valor não finito viram mensagem de erro (nunca exceção)', () => {
+    for (const c of CALCULATORS) {
+      const d = defaults(c);
+      for (const inp of c.inputs.filter((i) => !i.optional && (!i.showIf || i.showIf(d.opt)))) {
+        for (const bad of ['', 'abc', '1e400', '--2']) {
+          const r = runCalculator(c, { ...d.text, [inp.key]: bad }, d.units, d.opt);
+          expect(r.ok, `${c.id}.${inp.key} = "${bad}"`).toBe(false);
+          if (!r.ok) expect(r.errors.length).toBeGreaterThan(0);
+        }
+      }
+    }
+  });
+  it('todas as unidades oferecidas geram passos legíveis (sem “undefined” na conversão)', () => {
+    for (const c of CALCULATORS) {
+      const d = defaults(c);
+      for (const inp of c.inputs) {
+        for (const u of inp.units) {
+          const r = runCalculator(c, d.text, { ...d.units, [inp.key]: u }, d.opt);
+          if (r.ok) r.steps.forEach((s) => expect(s.text, `${c.id}.${inp.key} [${u}]`).not.toContain('undefined'));
+        }
+      }
+    }
+  });
+  it('rendimento: trabalho maior que o calor recebido é rejeitado; Carnot exige Tq > Tf', () => {
+    expect(run('rendimento', { Qq: '2', W: '5' }).ok).toBe(false);
+    expect(run('carnot', { Tq: '20', Tf: '80' }).ok).toBe(false);
+    expect(run('carnot', { Tq: '-300' }).ok).toBe(false);
+  });
+  it('alerta valores fisicamente suspeitos sem bloquear o cálculo', () => {
+    const r = ok(run('massa', { rho: '30000' }));
+    expect(r.warnings.some((w) => w.includes('ósmio'))).toBe(true);
+    expect(ok(run('cisalhamento', { e: '25' })).warnings.some((w) => w.includes('FINA'))).toBe(true);
+    expect(ok(run('massa')).warnings.some((w) => w.includes('ósmio'))).toBe(false);
+  });
+  it('prensa hidráulica (lista de revisão Q13): F2 = 36 × 360 N; curso inversamente proporcional', () => {
+    const r = ok(run('pascal'));
+    expect(val(r, 'Força no êmbolo de saída')).toBeCloseTo(12960, 6);
+    expect(val(r, 'Razão das áreas')).toBeCloseTo(36, 9);
+    expect(val(r, 'Pressão transmitida')).toBeCloseTo(360 / (Math.PI * 0.032 ** 2 / 4) / 1000, 6);
+    const s = ok(run('pascal', { s1: '36' }));
+    expect(val(s, 'Curso do êmbolo de saída')).toBeCloseTo(1, 9);
+    expect(ok(run('pascal', { F1: '0,36' }, { F1: 'kN' })).steps[0].text).toContain('N');
+  });
+  it('cilindro hidráulico (lista de revisão Q14): força teórica, útil e verificação da força exigida', () => {
+    const r = ok(run('cilindro-hidr'));
+    expect(val(r, 'Força teórica')).toBeCloseTo((5.5e6 * Math.PI * 0.07 ** 2) / 4 / 1000, 6);
+    expect(val(r, 'Força útil')).toBeCloseTo((0.88 * 5.5e6 * Math.PI * 0.07 ** 2) / 4 / 1000, 6);
+    expect(r.meaning).toContain('NÃO atende');
+    expect(val(r, 'Pressão mínima')).toBeCloseTo(20000 / (0.88 * (Math.PI * 0.07 ** 2) / 4) / 1e6, 6);
+    expect(run('cilindro-hidr', { perdas: '100' }).ok).toBe(false);
+  });
+});
+

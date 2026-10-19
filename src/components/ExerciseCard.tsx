@@ -4,6 +4,7 @@ import { checkNumericAnswer, type CheckResult } from '../lib/answerCheck';
 import { getUnit, parseNumber } from '../lib/units';
 import { moduleHref } from '../router';
 import { useProgress } from '../progressContext';
+import { AnswerComparison, AttemptHistory, GuidedSolution } from './ExerciseExtras';
 import { FormulaZoom } from './FormulaZoom';
 import { Tex } from './Tex';
 
@@ -11,6 +12,7 @@ export function ExerciseCard({ ex, open: openInit = false }: { ex: Exercise; ope
   const [open, setOpen] = useState(openInit);
   const [state] = useProgress();
   const solved = state.solvedExercises.includes(ex.id);
+  const [round, setRound] = useState(0);
   const bodyId = useId();
   return (
     <article className={`exercise ${open ? 'exercise--open' : ''}`}>
@@ -23,17 +25,19 @@ export function ExerciseCard({ ex, open: openInit = false }: { ex: Exercise; ope
       </button>
       {open && (
         <div id={bodyId} className="exercise__body">
-          <ExerciseBody ex={ex} />
+          <ExerciseBody key={round} ex={ex} onRestart={() => setRound((r) => r + 1)} />
         </div>
       )}
     </article>
   );
 }
 
-function ExerciseBody({ ex }: { ex: Exercise }) {
-  const [, progress] = useProgress();
+function ExerciseBody({ ex, onRestart }: { ex: Exercise; onRestart: () => void }) {
+  const [state, progress] = useProgress();
   const [hints, setHints] = useState(0);
   const [showSolution, setShowSolution] = useState(false);
+  const [guided, setGuided] = useState(false);
+  const solved = state.solvedExercises.includes(ex.id);
   const [value, setValue] = useState('');
   const [unit, setUnit] = useState(ex.answer?.units[0] ?? '');
   const [check, setCheck] = useState<CheckResult | null>(null);
@@ -43,7 +47,8 @@ function ExerciseBody({ ex }: { ex: Exercise }) {
     if (!ex.answer) return;
     const r = checkNumericAnswer(parseNumber(value), unit, ex.answer);
     setCheck(r);
-    if (r.status === 'correto') progress.markExerciseSolved(ex.id);
+    if (r.status !== 'invalido') progress.recordExerciseAttempt(ex.id, r.status);
+    if (r.status === 'correto') progress.markExerciseSolved(ex.id, `Exercício: ${ex.title}`, exerciseHref(ex.id));
   }
 
   return (
@@ -106,6 +111,8 @@ function ExerciseBody({ ex }: { ex: Exercise }) {
               {check.message}
             </p>
           )}
+          {check && <AnswerComparison ex={ex} value={value} unit={unit} check={check} showExpected={check.status === 'correto' || showSolution} />}
+          <AttemptHistory stat={state.exerciseStats[ex.id]} solved={solved} />
         </form>
       )}
       {!ex.answer && !showSolution && (
@@ -124,9 +131,17 @@ function ExerciseBody({ ex }: { ex: Exercise }) {
               {hints === 0 ? 'Quero uma dica' : `Mostrar dica ${hints + 1} de 3`}
             </button>
           )}
+          <button type="button" className="btn btn--ghost" onClick={() => setGuided((g) => !g)} aria-expanded={guided}>
+            {guided ? 'Fechar roteiro' : 'Resolver passo a passo'}
+          </button>
           <button type="button" className="btn btn--ghost" onClick={() => setShowSolution((s) => !s)} aria-expanded={showSolution}>
             {showSolution ? 'Esconder resolução' : 'Ver resolução completa'}
           </button>
+          {(check || hints > 0 || showSolution || guided) && (
+            <button type="button" className="btn btn--link" onClick={onRestart} title="Limpa resposta, dicas e resolução; seu progresso salvo é mantido">
+              Refazer do zero
+            </button>
+          )}
           {ex.section && (
             <a className="btn btn--link" href={moduleHref(ex.module, ex.section)}>
               Voltar à teoria
@@ -134,6 +149,8 @@ function ExerciseBody({ ex }: { ex: Exercise }) {
           )}
         </div>
       </div>
+
+      {guided && <GuidedSolution ex={ex} onClose={() => setGuided(false)} />}
 
       {showSolution && (
         <div className="solution">
@@ -167,7 +184,7 @@ function ExerciseBody({ ex }: { ex: Exercise }) {
             </div>
           )}
           {!ex.answer && (
-            <button type="button" className="btn" onClick={() => progress.markExerciseSolved(ex.id)}>
+            <button type="button" className="btn" onClick={() => progress.markExerciseSolved(ex.id, `Exercício: ${ex.title}`, exerciseHref(ex.id))}>
               Entendi — marcar como resolvido
             </button>
           )}
@@ -176,6 +193,8 @@ function ExerciseBody({ ex }: { ex: Exercise }) {
     </>
   );
 }
+
+const exerciseHref = (id: string) => (id.startsWith('rev-') ? `#/revisao/${id}` : `#/exercicios/${id}`);
 
 function Row({ label, children }: { label: string; children: ReactNode }) {
   return (

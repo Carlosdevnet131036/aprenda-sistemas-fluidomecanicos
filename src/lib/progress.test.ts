@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { countSolved, createProgressStore, sanitize, STORAGE_KEY, type StorageLike } from './progress';
+import { CORRUPT_KEY, countSolved, createProgressStore, sanitize, STORAGE_KEY, type StorageLike } from './progress';
 
 function memoryStorage(): StorageLike & { data: Map<string, string> } {
   const data = new Map<string, string>();
@@ -79,5 +79,44 @@ describe('progresso no navegador', () => {
     expect(countSolved(solved, ['l01-q1', 'l01-q2'])).toBe(1);
     expect(countSolved(solved, ['rev-q1', 'rev-q2', 'rev-q3'])).toBe(2);
     expect(countSolved([], ['l01-q1'])).toBe(0);
+  });
+  it('versão 2: cada resposta atualiza estatística, revisão espaçada e lista de erros', () => {
+    const now = new Date(2026, 9, 1, 12);
+    const s = createProgressStore(memoryStorage(), () => now);
+    s.recordAnswer('q1', false);
+    expect(s.get().questionStats.q1).toMatchObject({ attempts: 1, correct: 0, lastCorrect: false });
+    expect(s.get().reviews.q1.box).toBe(0);
+    s.recordReview('q1', true, 'media');
+    expect(s.get().reviews.q1.box).toBe(1);
+    expect(s.get().wrongQuestions.q1).toBeUndefined();
+    expect(s.get().reviewLog[s.get().reviewLog.length - 1]).toMatchObject({ id: 'q1', correct: true, rating: 'media' });
+  });
+  it('migra dados da versão 1 salvos no navegador', () => {
+    const st = memoryStorage();
+    st.setItem(STORAGE_KEY, JSON.stringify({ version: 1, completedModules: ['m3'], wrongQuestions: { a: 1 }, solvedExercises: ['e1'] }));
+    const s = createProgressStore(st);
+    expect(s.get().version).toBe(2);
+    expect(s.get().completedModules).toEqual(['m3']);
+    expect(s.get().reviews.a.box).toBe(0);
+    expect(s.get().solvedExercises).toEqual(['e1']);
+  });
+  it('dados ilegíveis são copiados para outra chave antes de recomeçar', () => {
+    const st = memoryStorage();
+    st.setItem(STORAGE_KEY, '{quebrado');
+    const s = createProgressStore(st);
+    expect(s.loadIssue()).toBe('corrompido');
+    expect(st.data.get(CORRUPT_KEY)).toBe('{quebrado');
+  });
+  it('tentativas de exercício registram tipos de erro; plano marca sessões; intervalos inválidos são recusados', () => {
+    const s = createProgressStore(null, () => new Date(2026, 9, 1));
+    s.recordExerciseAttempt('e1', 'unidade');
+    s.recordExerciseAttempt('e1', 'correto');
+    expect(s.get().exerciseStats.e1).toMatchObject({ attempts: 2, errors: { unidade: 1 }, lastStatus: 'correto' });
+    s.setPlan({ enabled: true, examDate: '2026-10-20', startDate: '2026-10-01', minutesPerDay: 60, priorityModules: ['m3'], pendingModules: ['m3'], weakModules: [], done: {} });
+    s.togglePlanSession('x');
+    expect(s.get().plan!.done.x).toBe('2026-10-01');
+    expect(() => s.setIntervals([5, 2])).toThrow();
+    s.setIntervals([2, 4]);
+    expect(s.get().settings.srsIntervals).toEqual([2, 4]);
   });
 });

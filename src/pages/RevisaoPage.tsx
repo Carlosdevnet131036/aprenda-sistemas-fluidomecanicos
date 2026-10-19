@@ -1,16 +1,22 @@
+import { useEffect } from 'react';
 import { ExerciseCard } from '../components/ExerciseCard';
 import { getRevisao, REVISAO, REVISAO_CONSTANTES, REVISAO_GROUPS } from '../content/revisao';
 import { useProgress } from '../progressContext';
 
-export function RevisaoPage({ id }: { id?: string }) {
+export function RevisaoPage({ id, sec }: { id?: string; sec?: string | null }) {
   const [state] = useProgress();
   const single = id ? getRevisao(id) : undefined;
+  // âncora de assunto (#/revisao?sec=g0) ao abrir o link diretamente
+  useEffect(() => {
+    if (!single && sec) requestAnimationFrame(() => document.getElementById(sec)?.scrollIntoView({ block: 'start' }));
+  }, [single, sec]);
   if (single) {
     return (
       <div className="page page--narrow">
-        <nav className="crumbs">
+        <nav className="crumbs" aria-label="Você está em">
           <a href="#/revisao">Revisão da prova</a> › <span aria-current="page">{single.title}</span>
         </nav>
+        <h1 className="sr-only">{single.title}</h1>
         <ExerciseCard ex={single} open />
       </div>
     );
@@ -19,6 +25,11 @@ export function RevisaoPage({ id }: { id?: string }) {
   const pct = Math.round((solved / REVISAO.length) * 100);
   return (
     <div className="page page--narrow">
+      {id && (
+        <p className="callout callout--alerta" role="alert">
+          Questão “{id}” não encontrada na lista de revisão. Escolha uma abaixo.
+        </p>
+      )}
       <header className="page__head">
         <p className="kicker kicker--hot">★ Prioridade máxima para a prova</p>
         <h1>Lista de revisão do professor</h1>

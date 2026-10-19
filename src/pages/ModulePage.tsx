@@ -31,8 +31,8 @@ export function ModulePage({ mod, sec }: { mod: Module; sec: string | null }) {
   const next = MODULES[idx + 1];
 
   useEffect(() => {
-    progress.visitModule(mod.id);
-  }, [mod.id, progress]);
+    progress.visitModule(mod.id, `Aula: Módulo ${mod.num} — ${mod.title}`);
+  }, [mod.id, mod.num, mod.title, progress]);
 
   useEffect(() => {
     if (!sec) return;
@@ -66,6 +66,19 @@ export function ModulePage({ mod, sec }: { mod: Module; sec: string | null }) {
         <nav className="crumbs" aria-label="Você está em">
           <a href="#/">Início</a> › <a href="#/trilha">Trilha</a> › <span aria-current="page">Módulo {mod.num}</span>
         </nav>
+        <details className="toc-mobile">
+          <summary>Nesta aula: {mod.sections.length + 1} seções</summary>
+          <ol>
+            {mod.sections.map((s) => (
+              <li key={s.id}>
+                <a href={moduleHref(mod.id, s.id)}>{s.title}</a>
+              </li>
+            ))}
+            <li>
+              <a href={moduleHref(mod.id, 'resumo')}>Resumo do módulo</a>
+            </li>
+          </ol>
+        </details>
         <header className="module__head">
           <p className="kicker">
             Módulo {mod.num} de {MODULES.length - 1} • ≈ {mod.minutes} min {done && <span className="badge badge--ok">Concluído</span>}

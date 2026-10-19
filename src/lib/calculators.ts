@@ -66,6 +66,10 @@ export interface CalculatorDef {
   module: ModuleId;
   section: string;
   summary: string;
+  /** o fenômeno físico, em linguagem simples */
+  about: string;
+  /** hipóteses e condições de uso (e formas equivalentes da equação) */
+  conditions: string;
   tex: string;
   inputs: CalcInput[];
   selects?: CalcSelect[];
@@ -73,11 +77,19 @@ export interface CalculatorDef {
 }
 
 const n = (x: number, sig = 4) => fmt(x, sig);
+
+// Limites de plausibilidade: acima deles o valor quase certamente tem erro de
+// digitação ou de unidade. O ósmio, substância mais densa conhecida, tem
+// ρ ≈ 22 600 kg/m³.
+const SUSPICIOUS_RHO = 22_600;
+const SUSPICIOUS_GAMMA = SUSPICIOUS_RHO * F.G_EARTH;
+const SUSPICIOUS_RHO_MSG = 'Massa específica acima da de qualquer substância conhecida (ósmio ≈ 22 600 kg/m³): confira o valor e a unidade.';
 const SI_LABEL: Record<string, string> = {
   comprimento: 'm',
   area: 'm²',
   volume: 'm³',
   massa: 'kg',
+  forca: 'N',
   pressao: 'Pa',
   energia: 'J',
   potencia: 'W',
@@ -154,6 +166,8 @@ export const CALCULATORS: CalculatorDef[] = [
   {
     id: 'peso', title: 'Peso', module: 'm1', section: 'formula-peso',
     summary: 'Força com que a gravidade puxa uma massa.',
+    about: 'A Terra (ou outro astro) atrai toda massa com uma força proporcional a ela: o peso.',
+    conditions: 'g é a aceleração da gravidade local: 9,81 m/s² na Terra (ou 10, se a questão mandar) e 1,62 m/s² na Lua. A massa não muda de lugar para lugar; só o peso muda.',
     tex: String.raw`P = m \cdot g`,
     inputs: [{ key: 'm', label: 'Massa', sym: 'm', units: ['kg', 'g', 't'], default: '120', allowZero: true }, gInput],
     compute: ({ v }) => {
@@ -176,6 +190,8 @@ export const CALCULATORS: CalculatorDef[] = [
   {
     id: 'volume', title: 'Volume de cilindro', module: 'm1', section: 'volume',
     summary: 'Tanques e eixos cilíndricos, com fração de preenchimento.',
+    about: 'O volume de um cilindro é a área do círculo da base (π·r²) multiplicada pela altura.',
+    conditions: 'V = π·r²·h usa o RAIO; a forma equivalente V = π·D²·h/4 usa o diâmetro. Use as dimensões internas; a fração de preenchimento multiplica o volume total.',
     tex: String.raw`V = \pi r^2 h,\quad r = D/2`,
     selects: [{ key: 'medida', label: 'Medida informada', default: 'D', options: [{ value: 'D', label: 'Diâmetro (D)' }, { value: 'r', label: 'Raio (r)' }] }],
     inputs: [
@@ -215,6 +231,8 @@ export const CALCULATORS: CalculatorDef[] = [
   {
     id: 'volume-caixa', title: 'Volume de paralelepípedo', module: 'm1', section: 'volume',
     summary: 'Reservatórios em forma de caixa, com fração de preenchimento.',
+    about: 'O volume de uma caixa retangular é comprimento × largura × altura.',
+    conditions: 'Converta todas as medidas para metros antes de multiplicar e use as dimensões internas do reservatório.',
     tex: String.raw`V = a \cdot b \cdot c`,
     inputs: [
       { key: 'a', label: 'Comprimento', sym: 'a', units: ['cm', 'm', 'mm'], default: '50' },
@@ -246,6 +264,8 @@ export const CALCULATORS: CalculatorDef[] = [
   {
     id: 'massa', title: 'Massa a partir de ρ e V', module: 'm1', section: 'densidade',
     summary: 'Quanto pesa o fluido que ocupa um volume.',
+    about: 'A massa específica ρ diz quantos quilogramas de fluido há em cada metro cúbico.',
+    conditions: 'Use o volume realmente ocupado pelo fluido (já com a fração de preenchimento). O peso usa P = m·g com o g informado.',
     tex: String.raw`m = \rho \cdot V`,
     inputs: [
       { key: 'rho', label: 'Massa específica', sym: 'ρ', units: ['kg/m3', 'g/cm3'], default: '850' },
@@ -267,13 +287,18 @@ export const CALCULATORS: CalculatorDef[] = [
           { label: 'Peso', value: P, unit: 'N' },
         ],
         meaning: `Cada m³ desse fluido tem ${n(v.rho, 4)} kg; o volume informado tem ${n(m, 4)} kg, que pesam ${n(P, 4)} N.`,
-        warnings: ['Se o volume estiver em litros, ele precisa virar m³ (÷1000) — a calculadora faz isso, mas na prova é você quem converte.'],
+        warnings: [
+          'Se o volume estiver em litros, ele precisa virar m³ (÷1000) — a calculadora faz isso, mas na prova é você quem converte.',
+          ...(v.rho > SUSPICIOUS_RHO ? [SUSPICIOUS_RHO_MSG] : []),
+        ],
       };
     },
   },
   {
     id: 'calor', title: 'Calor sensível', module: 'm2', section: 'calor',
     summary: 'Calor para aquecer ou esfriar um corpo.',
+    about: 'Calor sensível: energia trocada quando a temperatura de um corpo muda, sem mudança de fase.',
+    conditions: 'Vale sem mudança de estado físico e com c praticamente constante na faixa de temperatura. ΔT tem o mesmo valor em °C e em K.',
     tex: String.raw`Q = m \cdot c \cdot \Delta T`,
     inputs: [
       { key: 'm', label: 'Massa', sym: 'm', units: ['kg', 'g'], default: '2,0' },
@@ -304,6 +329,8 @@ export const CALCULATORS: CalculatorDef[] = [
   {
     id: 'trabalho', title: 'Trabalho a pressão constante', module: 'm2', section: 'trabalho',
     summary: 'Trabalho de expansão ou compressão isobárica.',
+    about: 'Ao se expandir, um gás empurra a fronteira (o pistão) e transfere energia na forma de trabalho.',
+    conditions: 'Só vale com pressão constante durante todo o processo (isobárico). Em outros processos, W é a área sob a curva no diagrama p–V.',
     tex: String.raw`W = p \cdot (V_f - V_i)`,
     inputs: [
       { key: 'p', label: 'Pressão (constante)', sym: 'p', units: ['kPa', 'Pa', 'MPa', 'bar'], default: '200', allowZero: true },
@@ -329,6 +356,8 @@ export const CALCULATORS: CalculatorDef[] = [
   {
     id: 'primeira-lei', title: '1ª Lei da Termodinâmica', module: 'm2', section: 'primeira-lei',
     summary: 'Escolha o que acontece com o gás e veja os sinais.',
+    about: 'Conservação da energia num sistema fechado: a energia interna varia com o calor recebido menos o trabalho feito pelo sistema.',
+    conditions: 'Convenção do material: Q > 0 quando o sistema recebe calor e W > 0 quando o trabalho é feito PELO sistema. Livros que escrevem ΔU = Q + W tratam como positivo o trabalho feito SOBRE o sistema — mesma física, outro sinal.',
     tex: String.raw`\Delta U = Q - W`,
     selects: [
       { key: 'qdir', label: 'O sistema…', default: 'recebe', options: [{ value: 'recebe', label: 'recebe calor (Q > 0)' }, { value: 'perde', label: 'perde/libera calor (Q < 0)' }] },
@@ -362,6 +391,8 @@ export const CALCULATORS: CalculatorDef[] = [
   {
     id: 'rendimento', title: 'Rendimento de máquina térmica', module: 'm3', section: 'maquina',
     summary: 'A partir do calor recebido e do trabalho produzido.',
+    about: 'Uma máquina térmica em ciclo recebe calor de uma fonte quente, transforma parte em trabalho e rejeita o resto a uma fonte fria.',
+    conditions: 'Vale para máquinas em ciclo (ΔU = 0 no ciclo). Qq e W devem estar ambos em energia (J) ou ambos em potência (W).',
     tex: String.raw`\eta = \dfrac{W}{Q_q},\quad Q_f = Q_q - W`,
     inputs: [
       { key: 'Qq', label: 'Calor recebido (fonte quente)', sym: 'Qq', units: ENERGY_OR_POWER, default: '5' },
@@ -392,6 +423,8 @@ export const CALCULATORS: CalculatorDef[] = [
   {
     id: 'carnot', title: 'Rendimento máximo de Carnot', module: 'm3', section: 'carnot',
     summary: 'Com conversão °C → K, fração de Carnot e teste de viabilidade.',
+    about: 'O ciclo de Carnot, ideal e reversível, dá o maior rendimento possível entre duas temperaturas.',
+    conditions: 'Temperaturas obrigatoriamente em kelvin, com Tq > Tf. Máquinas reais ficam abaixo desse limite; a “fração de Carnot” aplica esse desconto.',
     tex: String.raw`\eta_C = 1 - \dfrac{T_f}{T_q}\ \ (T\ \text{em K})`,
     inputs: [
       { key: 'Tq', label: 'Temperatura da fonte quente', sym: 'Tq', units: ['C', 'K'], default: '327', allowNegative: true, allowZero: true },
@@ -442,6 +475,8 @@ export const CALCULATORS: CalculatorDef[] = [
   {
     id: 'propriedades', title: 'ρ, d, γ e γr', module: 'm4', section: 'propriedades',
     summary: 'Propriedades estáticas de um fluido.',
+    about: 'Massa específica (massa por volume), densidade relativa (comparação com a água) e peso específico (peso por volume).',
+    conditions: 'Referência: água com ρ = 1000 kg/m³. Use o g indicado na questão. d e γr são adimensionais e têm o mesmo valor.',
     tex: String.raw`\rho = \tfrac{m}{V},\ d = \tfrac{\rho}{1000},\ \gamma = \rho g,\ \gamma_r = \tfrac{\gamma}{\gamma_{água}}`,
     selects: [{ key: 'modo', label: 'Dado conhecido', default: 'mV', options: [{ value: 'mV', label: 'Massa e volume' }, { value: 'rho', label: 'Massa específica ρ' }, { value: 'd', label: 'Densidade relativa d' }] }],
     inputs: [
@@ -481,13 +516,19 @@ export const CALCULATORS: CalculatorDef[] = [
           { label: 'Peso específico relativo γr', value: gr, unit: '(adimensional)' },
         ],
         meaning: d < 1 ? `O fluido é ${n((1 - d) * 100, 3)}% mais leve que a água (flutuaria sobre ela).` : d > 1 ? `O fluido é ${n(d, 3)} vezes mais denso que a água.` : 'O fluido tem a mesma densidade da água.',
-        warnings: ['d e γr dão sempre o mesmo número: o g se cancela.', 'γ está em N/m³ e ρ em kg/m³ — não troque as unidades.'],
+        warnings: [
+          'd e γr dão sempre o mesmo número: o g se cancela.',
+          'γ está em N/m³ e ρ em kg/m³ — não troque as unidades.',
+          ...(rho > SUSPICIOUS_RHO ? [SUSPICIOUS_RHO_MSG] : []),
+        ],
       };
     },
   },
   {
     id: 'viscosidade', title: 'Viscosidade dinâmica ↔ cinemática', module: 'm4', section: 'formulas-visc',
     summary: 'Converter μ em ν e vice-versa.',
+    about: 'A viscosidade cinemática ν é a viscosidade dinâmica μ dividida pela massa específica ρ.',
+    conditions: 'μ e ρ devem ser do mesmo fluido, na mesma temperatura. Para τ, força e potência use μ (dinâmica), não ν.',
     tex: String.raw`\nu = \dfrac{\mu}{\rho}\ \Leftrightarrow\ \mu = \nu\rho`,
     selects: [{ key: 'modo', label: 'Calcular', default: 'nu', options: [{ value: 'nu', label: 'ν a partir de μ' }, { value: 'mu', label: 'μ a partir de ν' }] }],
     inputs: [
@@ -525,6 +566,8 @@ export const CALCULATORS: CalculatorDef[] = [
   {
     id: 'cisalhamento', title: 'Tensão de cisalhamento, força e potência', module: 'm4', section: 'formulas-visc',
     summary: 'Placa deslizando sobre película de óleo (perfil linear).',
+    about: 'Numa película fina entre uma placa móvel e uma fixa, o fluido resiste ao deslizamento com uma tensão proporcional à taxa de deformação.',
+    conditions: 'Fluido newtoniano, película fina com perfil de velocidade linear (dv/dy = v/e) e placa a velocidade constante.',
     tex: String.raw`\tau = \mu\,\dfrac{v}{e},\ F = \tau A,\ \text{Pot} = F v`,
     inputs: [
       { key: 'mu', label: 'Viscosidade dinâmica', sym: 'μ', units: ['Pa.s', 'mPa.s', 'cP'], default: '0,120', allowZero: true },
@@ -551,13 +594,19 @@ export const CALCULATORS: CalculatorDef[] = [
           { label: 'Potência dissipada', value: P, unit: 'W' },
         ],
         meaning: `Para manter a placa a velocidade constante é preciso aplicar ${n(Fv, 4)} N; ${n(P, 4)} W viram calor no óleo.`,
-        warnings: ['A espessura entra em METROS: 1,50 mm = 0,0015 m.', 'Dobrar a velocidade dobra a força e quadruplica a potência.'],
+        warnings: [
+          'A espessura entra em METROS: 1,50 mm = 0,0015 m.',
+          'Dobrar a velocidade dobra a força e quadruplica a potência.',
+          ...(v.e > 0.01 ? ['Película com mais de 10 mm: o perfil linear (dv/dy = v/e) supõe película FINA; confira se a espessura e a unidade estão certas.'] : []),
+        ],
       };
     },
   },
   {
     id: 'stevin', title: 'Pressão hidrostática (Stevin)', module: 'm5', section: 'stevin',
     summary: 'Pressão manométrica e absoluta a uma profundidade.',
+    about: 'Num fluido em repouso, a pressão aumenta com a profundidade por causa do peso da coluna de fluido acima do ponto.',
+    conditions: 'Fluido em repouso, contínuo e com massa específica constante; superfície aberta à atmosfera. Em tanque fechado, troque patm pela pressão do gás sobre o líquido.',
     tex: String.raw`p_{man} = \rho g h = \gamma h,\ p_{abs} = p_{atm} + p_{man}`,
     selects: [{ key: 'modo', label: 'Dado do fluido', default: 'rho', options: [{ value: 'rho', label: 'Massa específica ρ (e g)' }, { value: 'gamma', label: 'Peso específico γ' }] }],
     inputs: [
@@ -582,7 +631,103 @@ export const CALCULATORS: CalculatorDef[] = [
           { label: 'Pressão absoluta', value: pabs / 1000, unit: 'kPa' },
         ],
         meaning: `A ${n(v.h, 3)} m de profundidade, a pressão está ${n(pman / 1000, 4)} kPa acima da atmosférica.`,
-        warnings: ['Se a questão der γ, não multiplique por g de novo.', 'Leia se a questão pede pressão manométrica ou absoluta.'],
+        warnings: [
+          'Se a questão der γ, não multiplique por g de novo.',
+          'Leia se a questão pede pressão manométrica ou absoluta.',
+          ...(gamma > SUSPICIOUS_GAMMA ? ['Peso específico acima do de qualquer substância conhecida (≈ 222 kN/m³ para o ósmio; mercúrio ≈ 133 kN/m³): confira o valor e a unidade.'] : []),
+        ],
+      };
+    },
+  },
+  {
+    id: 'pascal', title: 'Prensa hidráulica (Pascal)', module: 'm5', section: 'pascal',
+    summary: 'Força no êmbolo maior e quanto ele se desloca.',
+    about: 'Num fluido confinado, a pressão aplicada a um êmbolo se transmite integralmente ao outro; com áreas diferentes, a força é multiplicada.',
+    conditions: 'Êmbolos no mesmo nível, fluido incompressível em repouso, sem atrito, vazamento ou peso dos êmbolos. A energia não é multiplicada: o êmbolo maior anda menos (A1·s1 = A2·s2). Com desnível entre os êmbolos, some ρ·g·h (Stevin).',
+    tex: String.raw`\dfrac{F_1}{A_1} = \dfrac{F_2}{A_2},\ A = \dfrac{\pi d^2}{4}`,
+    inputs: [
+      { key: 'F1', label: 'Força no êmbolo de entrada', sym: 'F1', units: ['N', 'kN'], default: '360' },
+      { key: 'd1', label: 'Diâmetro do êmbolo de entrada', sym: 'd1', units: ['mm', 'cm', 'm'], default: '32' },
+      { key: 'd2', label: 'Diâmetro do êmbolo de saída', sym: 'd2', units: ['mm', 'cm', 'm'], default: '192' },
+      { key: 's1', label: 'Curso do êmbolo de entrada (opcional)', sym: 's1', units: ['cm', 'mm', 'm'], default: '', optional: true },
+    ],
+    compute: ({ v, has }) => {
+      const A1 = F.circleAreaFromDiameter(v.d1);
+      const A2 = F.circleAreaFromDiameter(v.d2);
+      const p = v.F1 / A1;
+      const F2 = F.pascalOutputForce(v.F1, A1, A2);
+      const ratio = A2 / A1;
+      const steps: CalcStep[] = [
+        { label: 'Áreas', text: `A1 = π·d1²/4 = ${n(A1, 5)} m²;  A2 = π·d2²/4 = ${n(A2, 5)} m²` },
+        { label: 'Pressão', text: `p = F1/A1 = ${n(v.F1, 5)} / ${n(A1, 5)} = ${n(p, 6)} Pa` },
+        { label: 'Equação', text: 'F1/A1 = F2/A2  ⇒  F2 = p · A2 = F1 · (d2/d1)²' },
+        { label: 'Cálculo', text: `F2 = ${n(p, 6)} × ${n(A2, 5)} = ${n(F2, 6)} N  (razão das áreas = ${n(ratio, 5)})` },
+      ];
+      const results: CalcResult[] = [
+        { label: 'Pressão transmitida', value: p / 1000, unit: 'kPa' },
+        { label: 'Força no êmbolo de saída F2', value: F2, unit: 'N', sig: 6 },
+        { label: 'Razão das áreas A2/A1', value: ratio, unit: '(adimensional)' },
+      ];
+      if (has('s1')) {
+        const s2 = F.pascalOutputStroke(v.s1, A1, A2);
+        steps.push({ label: 'Curso', text: `A1·s1 = A2·s2 ⇒ s2 = ${n(v.s1, 5)} × ${n(A1, 5)} / ${n(A2, 5)} = ${n(s2, 5)} m` });
+        steps.push({ label: 'Trabalho', text: `F1·s1 = ${n(v.F1 * v.s1, 5)} J = F2·s2 = ${n(F2 * s2, 5)} J` });
+        results.push({ label: 'Curso do êmbolo de saída s2', value: s2 * 100, unit: 'cm' });
+      }
+      const dRatio = v.d2 / v.d1;
+      return {
+        steps,
+        results,
+        meaning:
+          ratio >= 1
+            ? `A força sai ${n(ratio, 4)} vezes maior, mas o êmbolo de saída anda ${n(ratio, 4)} vezes menos: a prensa troca deslocamento por força.`
+            : 'O êmbolo de saída é menor que o de entrada: a força diminui (e o deslocamento aumenta).',
+        warnings: [
+          `Use a razão das ÁREAS, (d2/d1)² = ${n(ratio, 4)}, e não a razão dos diâmetros (${n(dRatio, 4)}).`,
+          'Só vale com os êmbolos no mesmo nível; com desnível, a pressão no êmbolo mais baixo é maior em ρ·g·h.',
+        ],
+      };
+    },
+  },
+  {
+    id: 'cilindro-hidr', title: 'Força de cilindro hidráulico', module: 'm5', section: 'pascal',
+    summary: 'Força teórica e útil a partir da pressão e do diâmetro do pistão.',
+    about: 'A pressão do óleo empurra a face do pistão: a força é a pressão vezes a área.',
+    conditions: 'Use a pressão manométrica quando a outra câmara está à atmosfera (a atmosfera age dos dois lados e se cancela). As perdas mecânicas, em fração, reduzem a força útil.',
+    tex: String.raw`F = p_{man}\,A,\ F_{útil} = (1 - \text{perdas})\,F`,
+    inputs: [
+      { key: 'p', label: 'Pressão manométrica', sym: 'pman', units: ['MPa', 'kPa', 'bar', 'Pa'], default: '5,50' },
+      { key: 'D', label: 'Diâmetro do pistão', sym: 'D', units: ['mm', 'cm', 'm'], default: '70' },
+      { key: 'perdas', label: 'Perdas mecânicas', sym: 'perdas', units: ['%'], default: '12', allowZero: true, help: '0 para cilindro ideal' },
+      { key: 'Freq', label: 'Força útil exigida (opcional)', sym: 'Fexig', units: ['kN', 'N'], default: '20,0', optional: true },
+    ],
+    compute: ({ v, has }) => {
+      const A = F.circleAreaFromDiameter(v.D);
+      const Ft = F.hydraulicCylinderForce(v.p, A);
+      const Fu = F.hydraulicCylinderForce(v.p, A, v.perdas);
+      const steps: CalcStep[] = [
+        { label: 'Área', text: `A = π·D²/4 = ${n(A, 5)} m²` },
+        { label: 'Teórica', text: `F = pman · A = ${n(v.p, 6)} × ${n(A, 5)} = ${n(Ft, 6)} N` },
+        { label: 'Útil', text: `Fútil = (1 − ${n(v.perdas, 4)}) × ${n(Ft, 6)} = ${n(Fu, 6)} N` },
+      ];
+      const results: CalcResult[] = [
+        { label: 'Força teórica', value: Ft / 1000, unit: 'kN' },
+        { label: 'Força útil', value: Fu / 1000, unit: 'kN' },
+      ];
+      let meaning = `O cilindro empurra com ${n(Ft / 1000, 4)} kN em teoria; descontadas as perdas, entrega ${n(Fu / 1000, 4)} kN.`;
+      if (has('Freq')) {
+        const pMin = v.Freq / ((1 - v.perdas) * A);
+        const enough = Fu >= v.Freq;
+        steps.push({ label: 'Verificação', text: `Fútil = ${n(Fu, 6)} N ${enough ? '≥' : '<'} ${n(v.Freq, 6)} N exigidos` });
+        steps.push({ label: 'Pressão mínima', text: `pmín = Fexig / [(1 − perdas)·A] = ${n(pMin, 6)} Pa` });
+        results.push({ label: 'Pressão mínima para a força exigida', value: pMin / 1e6, unit: 'MPa' });
+        meaning += enough ? ' Atende à força exigida.' : ' NÃO atende à força exigida: aumente a pressão ou o diâmetro.';
+      }
+      return {
+        steps,
+        results,
+        meaning,
+        warnings: ['A força teórica é ANTES de descontar as perdas.', 'Converta o diâmetro para metros e a pressão para Pa antes de multiplicar.'],
       };
     },
   },

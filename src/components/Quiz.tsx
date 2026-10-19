@@ -210,7 +210,7 @@ export function Feedback({ q, given }: { q: Question; given: boolean | undefined
   );
 }
 
-function QuizResult({ summary, mode, compact, onRetry }: { summary: QuizSummary; mode: QuizMode; compact: boolean; onRetry?: () => void }) {
+export function QuizResult({ summary, mode, compact, onRetry }: { summary: QuizSummary; mode: QuizMode; compact: boolean; onRetry?: () => void }) {
   const wrong = summary.results.filter((r) => !r.correct);
   const [showAll, setShowAll] = useState(mode === 'avaliacao');
   const list = showAll ? summary.results : wrong;
