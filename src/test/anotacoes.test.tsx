@@ -183,7 +183,9 @@ describe('caderno de cálculos', () => {
     const user = userEvent.setup();
     wrap(<ExerciseCard ex={ex6} open />);
     await user.click(screen.getByRole('button', { name: 'Caderno de cálculos' }));
-    vi.spyOn(window.localStorage, 'setItem').mockImplementation(() => {
+    // no jsdom o método fica no protótipo (Storage); no armazenamento em memória dos testes, na instância
+    const target = typeof Storage !== 'undefined' && window.localStorage instanceof Storage ? Storage.prototype : window.localStorage;
+    vi.spyOn(target, 'setItem').mockImplementation(() => {
       throw new DOMException('cheio', 'QuotaExceededError');
     });
     const ta = screen.getByLabelText('Anotações e cálculos') as HTMLTextAreaElement;
