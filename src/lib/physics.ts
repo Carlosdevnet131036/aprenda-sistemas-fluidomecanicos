@@ -324,6 +324,38 @@ export function gaugePressure(pAbs: number, pAtm: number): number {
   return pAbs - pAtm;
 }
 
+// ---------- Módulo 5: princípio de Pascal ----------
+
+/** A = π·d²/4  [m²] — área do êmbolo a partir do DIÂMETRO. */
+export function circleAreaFromDiameter(d: number): number {
+  positive('O diâmetro', d);
+  return (Math.PI * d * d) / 4;
+}
+
+/** Prensa ideal, êmbolos no mesmo nível: F1/A1 = F2/A2 ⇒ F2 = F1·A2/A1  [N] */
+export function pascalOutputForce(f1: number, a1: number, a2: number): number {
+  nonNegative('A força de entrada', f1);
+  positive('A área do êmbolo de entrada', a1);
+  positive('A área do êmbolo de saída', a2);
+  return (f1 * a2) / a1;
+}
+
+/** Volume deslocado é o mesmo: A1·s1 = A2·s2 ⇒ s2 = s1·A1/A2  [m] */
+export function pascalOutputStroke(s1: number, a1: number, a2: number): number {
+  nonNegative('O curso do êmbolo de entrada', s1);
+  positive('A área do êmbolo de entrada', a1);
+  positive('A área do êmbolo de saída', a2);
+  return (s1 * a1) / a2;
+}
+
+/** Cilindro hidráulico: F = p_man·A, descontada a fração de perdas (0 a 1)  [N] */
+export function hydraulicCylinderForce(pGauge: number, area: number, losses = 0): number {
+  finite('A pressão manométrica', pGauge);
+  positive('A área do pistão', area);
+  if (!(losses >= 0 && losses < 1)) throw new PhysicsError('As perdas devem ser uma fração entre 0 e 1.');
+  return pGauge * area * (1 - losses);
+}
+
 export interface ManometerSegment {
   fluid: string;
   /** peso específico γ = ρ·g do fluido NAQUELE trecho [N/m³] */

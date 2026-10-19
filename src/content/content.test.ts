@@ -219,6 +219,22 @@ describe('lista de revisão da prova', () => {
       e.answer?.units.forEach((u) => getUnit(u));
     }
   });
+  it('questões de Pascal (13–15) apontam para uma seção de teoria com fórmulas e V/F', async () => {
+    const { REVISAO } = await import('./revisao');
+    const m5 = MODULES.find((m) => m.id === 'm5')!;
+    const sec = m5.sections.find((s) => s.id === 'pascal')!;
+    expect(sec).toBeDefined();
+    for (const id of ['rev-q13', 'rev-q14', 'rev-q15']) {
+      expect(REVISAO.find((e) => e.id === id)!.section, id).toBe('pascal');
+      expect(sec.blocks.some((b) => b.t === 'link' && b.href === `#/revisao/${id}`), id).toBe(true);
+    }
+    expect(sec.blocks.filter((b) => b.t === 'formula').length).toBeGreaterThanOrEqual(3);
+    const vfIds = sec.blocks.flatMap((b) => (b.t === 'vf' ? b.ids : []));
+    expect(vfIds.length).toBeGreaterThanOrEqual(4);
+    expect(vfIds.every((id) => QUESTIONS.find((q) => q.id === id)?.section === 'pascal')).toBe(true);
+    expect(FORMULAS.some((f) => f.id === 'pascal')).toBe(true);
+    expect(GLOSSARY.some((g) => g.term === 'Princípio de Pascal')).toBe(true);
+  });
   it('respostas recalculadas de forma independente', async () => {
     const { REVISAO } = await import('./revisao');
     const g = 9.81;

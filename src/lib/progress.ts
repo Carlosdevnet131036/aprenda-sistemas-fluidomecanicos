@@ -73,6 +73,16 @@ export function sanitize(raw: unknown): ProgressState {
   };
 }
 
+/**
+ * Quantos itens de uma lista já foram resolvidos. `solvedExercises` guarda
+ * exercícios e questões da lista de revisão juntos, então cada contador
+ * precisa filtrar pelos ids da própria lista.
+ */
+export function countSolved(solved: readonly string[], ids: readonly string[]): number {
+  const done = new Set(solved);
+  return ids.filter((id) => done.has(id)).length;
+}
+
 export interface StorageLike {
   getItem(k: string): string | null;
   setItem(k: string, v: string): void;

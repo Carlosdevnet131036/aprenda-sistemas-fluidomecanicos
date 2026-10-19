@@ -53,6 +53,8 @@ export const GLOSSARY: GlossaryTerm[] = [
   { term: 'Pressão absoluta', symbol: 'pabs', def: 'pabs = patm + pman; medida em relação ao vácuo.', module: 'm5' },
   { term: 'Manômetro de tubo em U', def: 'Instrumento que mede pressão por diferença de altura de colunas de fluido.', module: 'm5' },
   { term: 'Fluido manométrico', def: 'Fluido denso (geralmente mercúrio) usado no tubo em U.', module: 'm5' },
+  { term: 'Princípio de Pascal', def: 'Um acréscimo de pressão num fluido incompressível, confinado e em repouso é transmitido integralmente a todos os seus pontos.', module: 'm5' },
+  { term: 'Prensa hidráulica', def: 'Dois êmbolos de áreas diferentes ligados por óleo: F2 = F1·A2/A1. Multiplica a força, não a energia (o êmbolo maior anda menos).', module: 'm5' },
 ];
 
 export const FORMULAS: FormulaEntry[] = [
@@ -79,6 +81,8 @@ export const FORMULAS: FormulaEntry[] = [
   { id: 'pressao', name: 'Pressão', tex: String.raw`p = \dfrac{F}{A}`, module: 'm5', vars: 'p [Pa], F [N], A [m²]', note: '1 Pa = 1 N/m² (complemento).', keywords: 'pressão força área pascal' },
   { id: 'stevin', name: 'Lei de Stevin', tex: String.raw`p_2 = p_1 + \rho\,g\,h = p_1 + \gamma\,h`, module: 'm5', vars: 'h [m]', note: 'Desce soma, sobe subtrai.', keywords: 'stevin hidrostática profundidade', calc: 'stevin' },
   { id: 'abs', name: 'Pressão absoluta', tex: String.raw`p_{\text{abs}} = p_{\text{atm}} + p_{\text{man}}`, module: 'm5', vars: '', note: '1 kPa = 1000 Pa.', keywords: 'pressão absoluta manométrica atmosférica', calc: 'stevin' },
+  { id: 'pascal', name: 'Prensa hidráulica (Pascal)', tex: String.raw`\dfrac{F_1}{A_1} = \dfrac{F_2}{A_2} \;\Rightarrow\; F_2 = F_1 \left(\dfrac{d_2}{d_1}\right)^2`, module: 'm5', vars: 'F [N], A = π·d²/4 [m²], d [m]', note: 'Êmbolos no mesmo nível. Razão das ÁREAS (diâmetro ao quadrado). A1·s1 = A2·s2.', keywords: 'pascal prensa hidráulica macaco elevador êmbolo multiplicação força área diâmetro' },
+  { id: 'cilindro-hidr', name: 'Força de cilindro hidráulico', tex: String.raw`F = p_{\text{man}}\,A \qquad F_{\text{útil}} = (1 - \text{perdas})\,F`, module: 'm5', vars: 'p_man [Pa], A = π·D²/4 [m²]', note: 'Use a pressão manométrica quando a outra face está à atmosfera.', keywords: 'cilindro hidráulico pistão morsa força perdas pascal' },
   { id: 'manometro', name: 'Manômetro (caminhada)', tex: String.raw`p_{\text{início}} + \sum_{\text{desce}} \rho g h - \sum_{\text{sobe}} \rho g h = p_{\text{fim}}`, module: 'm5', vars: 'ρ de cada trecho', note: 'Use o fluido de cada trecho.', keywords: 'manômetro tubo em u mercúrio diferencial', calc: 'manometro' },
 ];
 

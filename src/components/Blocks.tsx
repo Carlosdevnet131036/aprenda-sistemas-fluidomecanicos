@@ -58,26 +58,28 @@ function BlockView({ b }: { b: Block }) {
           {b.caption && <p className="formula__caption">{b.caption}</p>}
           <Tex tex={b.tex} block />
           {b.symbols && (
-            <table className="symbols">
-              <thead>
-                <tr>
-                  <th>Símbolo</th>
-                  <th>Significado</th>
-                  <th>Unidade (SI)</th>
-                </tr>
-              </thead>
-              <tbody>
-                {b.symbols.map((s) => (
-                  <tr key={s.sym}>
-                    <td>
-                      <Tex tex={s.sym} />
-                    </td>
-                    <td>{s.name}</td>
-                    <td>{s.unit}</td>
+            <div className="table-wrap symbols-wrap" tabIndex={0} role="region" aria-label="Símbolos da fórmula">
+              <table className="symbols">
+                <thead>
+                  <tr>
+                    <th>Símbolo</th>
+                    <th>Significado</th>
+                    <th>Unidade (SI)</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {b.symbols.map((s) => (
+                    <tr key={s.sym}>
+                      <td>
+                        <Tex tex={s.sym} />
+                      </td>
+                      <td>{s.name}</td>
+                      <td>{s.unit}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
           {b.when && (
             <p className="formula__when">

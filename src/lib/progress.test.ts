@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createProgressStore, sanitize, STORAGE_KEY, type StorageLike } from './progress';
+import { countSolved, createProgressStore, sanitize, STORAGE_KEY, type StorageLike } from './progress';
 
 function memoryStorage(): StorageLike & { data: Map<string, string> } {
   const data = new Map<string, string>();
@@ -73,5 +73,11 @@ describe('progresso no navegador', () => {
     expect(s.isPersistent()).toBe(false);
     expect(() => s.reset()).not.toThrow();
     expect(createProgressStore(null).get().completedModules).toEqual([]);
+  });
+  it('contador de resolvidos considera só os ids da própria lista (revisão não infla os exercícios)', () => {
+    const solved = ['rev-q1', 'rev-q2', 'l01-q1', 'l01-q1'];
+    expect(countSolved(solved, ['l01-q1', 'l01-q2'])).toBe(1);
+    expect(countSolved(solved, ['rev-q1', 'rev-q2', 'rev-q3'])).toBe(2);
+    expect(countSolved([], ['l01-q1'])).toBe(0);
   });
 });

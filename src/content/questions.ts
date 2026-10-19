@@ -675,6 +675,42 @@ const M5 = mod('m5', [
     review: 'Aplicação da Lei de Stevin (Módulo 5).',
     fromMaterial: 'Seção 6 — conexão com a engenharia',
   },
+  {
+    id: 'm5-16', level: 'iniciante', topic: 'Princípio de Pascal', section: 'pascal', answer: true,
+    statement: 'Pelo princípio de Pascal, um acréscimo de pressão aplicado a um líquido confinado e em repouso é transmitido integralmente a todos os pontos do líquido.',
+    explanation: 'É o enunciado do princípio de Pascal. Ele decorre da Lei de Stevin: somar Δp à pressão de referência soma o mesmo Δp em todos os pontos, pois a parcela ρ·g·h não muda.',
+    review: 'Enunciado do princípio de Pascal (Módulo 5).',
+  },
+  {
+    id: 'm5-17', level: 'intermediario', topic: 'Princípio de Pascal', section: 'pascal', answer: false,
+    statement: 'Numa prensa hidráulica com êmbolos no mesmo nível, se o diâmetro do êmbolo maior é 6 vezes o do menor, a força no êmbolo maior é 6 vezes a força aplicada.',
+    explanation: 'A pressão é a mesma nos dois êmbolos, então a força é proporcional à ÁREA, que depende do diâmetro ao quadrado.',
+    correction: 'A força é (d2/d1)² = 6² = 36 vezes maior que a força aplicada.',
+    review: 'Razão das áreas na prensa hidráulica (Módulo 5).',
+    fromMaterial: 'Lista de revisão – Q13',
+  },
+  {
+    id: 'm5-18', level: 'intermediario', topic: 'Princípio de Pascal', section: 'pascal', answer: false,
+    statement: 'Uma prensa hidráulica ideal multiplica a energia: o trabalho realizado pelo êmbolo maior é maior que o trabalho feito sobre o êmbolo menor.',
+    explanation: 'O volume de óleo deslocado é o mesmo (A1·s1 = A2·s2): o êmbolo maior recebe mais força, mas anda proporcionalmente menos.',
+    correction: 'A prensa ideal multiplica a força, não a energia: F1·s1 = F2·s2 (trabalhos iguais).',
+    review: 'Conservação do volume e da energia na prensa (Módulo 5).',
+  },
+  {
+    id: 'm5-19', level: 'avancado', topic: 'Princípio de Pascal', section: 'pascal', answer: true,
+    statement: 'Num elevador hidráulico em equilíbrio, se o êmbolo da bomba está abaixo do êmbolo de elevação, a pressão no êmbolo da bomba é maior que a pressão sob o êmbolo de elevação.',
+    explanation: 'Descendo h no óleo, a pressão aumenta ρ·g·h (Stevin): p_bomba = p_elevação + ρ·g·h.',
+    review: 'Pascal com desnível entre os êmbolos (Módulo 5).',
+    fromMaterial: 'Lista de revisão – Q15',
+  },
+  {
+    id: 'm5-20', level: 'avancado', topic: 'Princípio de Pascal', section: 'pascal', answer: false,
+    statement: 'A força resultante de um cilindro hidráulico cuja outra câmara está à pressão atmosférica é a pressão absoluta do óleo multiplicada pela área do pistão.',
+    explanation: 'A atmosfera também empurra a outra face do pistão; essa parcela aparece dos dois lados e se cancela.',
+    correction: 'A força resultante é p_man·A, com a pressão manométrica (e as perdas ainda reduzem a força útil).',
+    review: 'Força de cilindro hidráulico (Módulo 5).',
+    fromMaterial: 'Lista de revisão – Q14',
+  },
 ]);
 
 const M6 = mod('m6', [

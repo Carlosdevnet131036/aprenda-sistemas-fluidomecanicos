@@ -5,6 +5,7 @@ import { EXERCISES, getExercise } from '../content/exercises';
 import { QUESTIONS } from '../content/questions';
 import { FORMULAS, GLOSSARY } from '../content/reference';
 import { CALCULATORS, getCalculator } from '../lib/calculators';
+import { countSolved } from '../lib/progress';
 import { convert, fmt, parseNumber, UNITS, unitsOf, type Dimension } from '../lib/units';
 import { Calculator } from '../components/Calculator';
 import { ManometerLab, NewtonianLab } from '../components/Labs';
@@ -111,7 +112,7 @@ export function ExercisesPage({ id }: { id?: string }) {
         <h1>Exercícios resolvidos</h1>
         <p className="lead">
           Listas 01 e da Aula 03, exercícios da Aula 5 e dos slides. Tente resolver, peça dicas progressivas e só depois abra a resolução.{' '}
-          {state.solvedExercises.length} de {EXERCISES.length} resolvidos.
+          {countSolved(state.solvedExercises, EXERCISES.map((e) => e.id))} de {EXERCISES.length} resolvidos.
         </p>
       </header>
       <div className="chips" role="group" aria-label="Filtrar por módulo">

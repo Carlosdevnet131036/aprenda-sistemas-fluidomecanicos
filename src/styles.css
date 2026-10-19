@@ -806,6 +806,9 @@ main {
   overflow-x: auto;
   margin: 1rem 0;
 }
+.symbols-wrap {
+  margin: 0.5rem 0 0;
+}
 .table {
   border-collapse: collapse;
   width: 100%;
@@ -1688,6 +1691,13 @@ main {
 @media (max-width: 420px) {
   .topbar__progress {
     display: none;
+  }
+  .calc__inputs .table th,
+  .calc__inputs .table td {
+    padding: 0.35rem 0.3rem;
+  }
+  .calc__inputs .table input {
+    min-width: 3.25rem;
   }
 }
 

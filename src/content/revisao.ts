@@ -312,7 +312,7 @@ export const REVISAO: Exercise[] = [
     answer: { value: 23.76, unit: 'kPa', label: 'pA,man', units: ['kPa', 'Pa'] },
   },
   {
-    id: 'rev-q13', module: 'm5', section: 'pressao', source: SRC(13),
+    id: 'rev-q13', module: 'm5', section: 'pascal', source: SRC(13),
     title: 'Q13 — Prensa hidráulica de montagem de rolamentos',
     statement:
       'Uma prensa hidráulica utilizada na montagem de rolamentos possui um êmbolo de entrada com diâmetro de 32 mm e um êmbolo de trabalho com diâmetro de 192 mm. Uma força de 360 N atua no êmbolo menor. Considere os êmbolos no mesmo nível, com as faces externas expostas à atmosfera, fluido incompressível e sistema ideal, sem perdas. Despreze o peso dos êmbolos. a) Calcule a área de cada êmbolo em metros quadrados. b) Determine a pressão manométrica transmitida ao fluido e a força disponível no êmbolo maior.',
@@ -335,7 +335,7 @@ export const REVISAO: Exercise[] = [
     answer: { value: 12960, unit: 'N', label: 'F2 (item b)', units: ['N', 'kN'] },
   },
   {
-    id: 'rev-q14', module: 'm5', section: 'pressao', source: SRC(14),
+    id: 'rev-q14', module: 'm5', section: 'pascal', source: SRC(14),
     title: 'Q14 — Morsa hidráulica da célula de usinagem',
     statement:
       'Uma morsa hidráulica de uma célula de usinagem utiliza um cilindro com diâmetro interno de 70 mm. Durante o avanço, a pressão manométrica na face completa do pistão é de 5,50 MPa, enquanto a outra câmara está à pressão atmosférica. As perdas mecânicas reduzem em 12% a força teórica. A peça exige uma força útil de aperto de pelo menos 20,0 kN. Determine a força teórica produzida pelo cilindro.',
@@ -357,7 +357,7 @@ export const REVISAO: Exercise[] = [
     answer: { value: 21.17, unit: 'kN', label: 'Fteórica', units: ['kN', 'N'] },
   },
   {
-    id: 'rev-q15', module: 'm5', section: 'stevin', source: SRC(15),
+    id: 'rev-q15', module: 'm5', section: 'pascal', source: SRC(15),
     title: 'Q15 — Elevador automotivo (Pascal + Stevin)',
     statement:
       'Um elevador automotivo deve sustentar um veículo de 1.000 kg. O êmbolo de elevação possui diâmetro de 180 mm e está 1,50 m acima do êmbolo da bomba, cujo diâmetro é de 20 mm. O óleo tem massa específica de 850 kg/m³. Considere o sistema em equilíbrio, as faces externas expostas à atmosfera e despreze perdas e pesos dos êmbolos. a) Determine a pressão manométrica necessária sob o êmbolo de elevação. b) Calcule a pressão manométrica no êmbolo da bomba, considerando a diferença de altura.',

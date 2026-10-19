@@ -6,7 +6,7 @@ Plataforma de estudo para a A1, construída a partir de `Revisao_A1_Sistemas_Flu
 
 - **Sem instalar nada:** abra `dist/index.html` com dois cliques. É um arquivo único (≈ 2 MB), funciona offline e pode ser copiado para o celular.
 - **Desenvolvimento:** `npm install`, depois `npm run dev`.
-- **Verificações:** `npm test` (135 testes), `npm run typecheck`, `npm run build`.
+- **Verificações:** `npm test` (143 testes), `npm run typecheck`, `npm run build`.
 
 ## O que tem
 
@@ -15,8 +15,8 @@ Plataforma de estudo para a A1, construída a partir de `Revisao_A1_Sistemas_Flu
 | Trilha | Módulos 0–7 em 10 etapas didáticas (introdução → resumo), com “Explique de outra forma” e o selo de origem de cada seção (material × complemento) |
 | Laboratório | 14 calculadoras com conversões, substituição, passos, resultado, significado e alertas |
 | Exercícios | 39 exercícios (Lista 01, Lista da Aula 03, Aula 5, slides) com 3 dicas progressivas e verificação de valor + sinal + unidade |
-| Quiz V/F | 106 afirmações em 3 níveis; modo aprendizagem e modo avaliação (sem correção até a entrega) |
-| Consulta | Formulário pesquisável, glossário (50 termos), conversor de unidades, 12 pegadinhas, checklist da véspera |
+| Quiz V/F | 111 afirmações em 3 níveis; modo aprendizagem e modo avaliação (sem correção até a entrega) |
+| Consulta | Formulário pesquisável, glossário (52 termos), conversor de unidades, 12 pegadinhas, checklist da véspera |
 | Meu estudo | Progresso por módulo, tentativas, revisão de erros e botão para apagar os dados |
 
 ## Arquitetura

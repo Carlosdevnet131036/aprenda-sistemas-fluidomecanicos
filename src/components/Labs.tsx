@@ -290,34 +290,36 @@ export function NewtonianLab() {
       </div>
       <div className="calc__grid">
         <div className="calc__inputs">
-          <table className="table">
-            <thead>
-              <tr>
-                <th>{cfg.xs}</th>
-                <th>{cfg.ys}</th>
-                <th>Razão</th>
-                <th />
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((r, i) => (
-                <tr key={i}>
-                  <td>
-                    <input aria-label={`${cfg.xs}, linha ${i + 1}`} inputMode="decimal" value={r.rate} onChange={(e) => setRows(rows.map((x, k) => (k === i ? { ...x, rate: e.target.value } : x)))} />
-                  </td>
-                  <td>
-                    <input aria-label={`${cfg.ys}, linha ${i + 1}`} inputMode="decimal" value={r.stress} onChange={(e) => setRows(rows.map((x, k) => (k === i ? { ...x, stress: e.target.value } : x)))} />
-                  </td>
-                  <td>{res.ok ? fmt(res.r.ratios[i], 3) : '—'}</td>
-                  <td>
-                    <button type="button" className="icon-btn" aria-label={`Remover linha ${i + 1}`} onClick={() => setRows(rows.filter((_, k) => k !== i))}>
-                      ×
-                    </button>
-                  </td>
+          <div className="table-wrap" tabIndex={0} role="region" aria-label="Tabela do ensaio">
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>{cfg.xs}</th>
+                  <th>{cfg.ys}</th>
+                  <th>Razão</th>
+                  <th />
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {rows.map((r, i) => (
+                  <tr key={i}>
+                    <td>
+                      <input aria-label={`${cfg.xs}, linha ${i + 1}`} inputMode="decimal" value={r.rate} onChange={(e) => setRows(rows.map((x, k) => (k === i ? { ...x, rate: e.target.value } : x)))} />
+                    </td>
+                    <td>
+                      <input aria-label={`${cfg.ys}, linha ${i + 1}`} inputMode="decimal" value={r.stress} onChange={(e) => setRows(rows.map((x, k) => (k === i ? { ...x, stress: e.target.value } : x)))} />
+                    </td>
+                    <td>{res.ok ? fmt(res.r.ratios[i], 3) : '—'}</td>
+                    <td>
+                      <button type="button" className="icon-btn" aria-label={`Remover linha ${i + 1}`} onClick={() => setRows(rows.filter((_, k) => k !== i))}>
+                        ×
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
           <button type="button" className="btn btn--ghost" onClick={() => setRows([...rows, { rate: '', stress: '' }])}>
             + Adicionar linha
           </button>

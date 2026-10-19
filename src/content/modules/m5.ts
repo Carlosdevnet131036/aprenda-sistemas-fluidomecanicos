@@ -1,14 +1,14 @@
 import type { Module } from '../types';
-import { box, calc, diagram, exercise, formula, list, ol, p, sym, table, vf, worked } from '../blocks';
+import { box, calc, diagram, exercise, formula, link, list, ol, p, sym, table, vf, worked } from '../blocks';
 
 export const m5: Module = {
   id: 'm5',
   num: 5,
   title: 'Pressão, Lei de Stevin e manometria',
   short: 'Manometria',
-  description: 'Conceito de pressão, pressão hidrostática, absoluta e manométrica, e como resolver manômetros de tubo em U passo a passo.',
-  source: 'Seção 6 do material (Aula 5 • exercícios do caderno) + seção 12 (Exercícios da Aula 5)',
-  minutes: 45,
+  description: 'Conceito de pressão, pressão hidrostática, absoluta e manométrica, manômetros de tubo em U passo a passo e o princípio de Pascal (prensas e cilindros hidráulicos).',
+  source: 'Seção 6 do material (Aula 5 • exercícios do caderno) + seção 12 (Exercícios da Aula 5) + princípio de Pascal (complemento para a lista de revisão)',
+  minutes: 60,
   sections: [
     {
       id: 'intro',
@@ -124,6 +124,73 @@ export const m5: Module = {
       ],
     },
     {
+      id: 'pascal',
+      kind: 'formulas',
+      title: 'Princípio de Pascal: prensas, macacos e cilindros hidráulicos',
+      origin: 'complemento',
+      blocks: [
+        p('Aperte uma seringa cheia de água com a ponta tampada: você empurra só o êmbolo, mas a pressão aumenta igualmente em toda a água — nas paredes, no fundo, em todo lugar. Esse é o **princípio de Pascal**, a base de prensas, macacos, elevadores automotivos e cilindros hidráulicos (questões 13 a 15 da lista de revisão).'),
+        box('conceito', 'Enunciado',
+          'Um acréscimo de pressão aplicado a um fluido incompressível, confinado e em repouso é transmitido **integralmente** a todos os pontos do fluido e às paredes do recipiente.'),
+        p('**De onde vem:** pela Lei de Stevin, a pressão em qualquer ponto é p = p₀ + ρ·g·h, em que p₀ é a pressão num ponto de referência (a face do êmbolo, por exemplo). Se p₀ aumenta Δp (alguém empurrou um êmbolo), todos os pontos ganham o mesmo Δp, porque a parcela ρ·g·h não mudou.'),
+        formula(String.raw`\begin{gathered} \dfrac{F_1}{A_1} = \dfrac{F_2}{A_2} \\ F_2 = F_1 \cdot \dfrac{A_2}{A_1} = F_1 \left(\dfrac{d_2}{d_1}\right)^2 \\ A = \dfrac{\pi\, d^2}{4} \end{gathered}`, {
+          caption: 'Prensa hidráulica com êmbolos no mesmo nível',
+          symbols: [
+            sym('F_1, F_2', 'força no êmbolo menor (entrada) e no maior (saída)', 'N'),
+            sym('A_1, A_2', 'área de cada êmbolo', 'm²'),
+            sym('d_1, d_2', 'diâmetro de cada êmbolo (converter mm → m!)', 'm'),
+          ],
+          when: 'Êmbolos no MESMO nível, fluido incompressível em repouso, sem atrito nem vazamento, desprezando o peso dos êmbolos. A pressão p = F1/A1 é a mesma nos dois êmbolos.',
+        }),
+        box('alerta', 'A razão é das ÁREAS, não dos diâmetros',
+          'Se o diâmetro do êmbolo maior é 6 vezes o do menor, a área (e a força) é 6² = 36 vezes maior. Usar a razão dos diâmetros dá uma força 6 vezes menor que a correta.'),
+        formula(String.raw`\begin{gathered} A_1 \cdot s_1 = A_2 \cdot s_2 \\ F_1 \cdot s_1 = F_2 \cdot s_2 \end{gathered}`, {
+          caption: 'O volume deslocado é o mesmo — e o trabalho também',
+          symbols: [sym('s_1, s_2', 'curso (deslocamento) de cada êmbolo', 'm')],
+          when: 'O líquido que sai de baixo do êmbolo menor entra embaixo do maior. A prensa multiplica a FORÇA, não a energia: o êmbolo maior anda proporcionalmente menos.',
+        }),
+        formula(String.raw`p_{\text{baixo}} = p_{\text{alto}} + \rho \cdot g \cdot h`, {
+          caption: 'Êmbolos em alturas diferentes (Pascal + Stevin)',
+          symbols: [sym('h', 'diferença de altura entre os êmbolos', 'm'), sym(String.raw`\rho`, 'massa específica do óleo', 'kg/m³')],
+          when: 'Quando os êmbolos NÃO estão no mesmo nível (ex.: elevador automotivo). O êmbolo mais baixo sente pressão maior; F1/A1 = F2/A2 deixa de valer.',
+        }),
+        formula(String.raw`\begin{gathered} F_{\text{teórica}} = p_{\text{man}} \cdot A \\ F_{\text{útil}} = (1 - \text{perdas})\,F_{\text{teórica}} \end{gathered}`, {
+          caption: 'Força de um cilindro hidráulico',
+          symbols: [
+            sym(String.raw`p_{\text{man}}`, 'pressão manométrica na câmara do pistão', 'Pa'),
+            sym('A', 'área da face do pistão = π·D²/4', 'm²'),
+            sym(String.raw`\text{perdas}`, 'fração perdida por atrito (12% → 0,12)', 'adimensional'),
+          ],
+          when: 'Quando a outra face do pistão está à pressão atmosférica: a atmosfera age dos dois lados e se cancela, por isso entra a pressão MANOMÉTRICA.',
+        }),
+        worked(
+          'Macaco hidráulico',
+          'Um macaco hidráulico tem êmbolo menor com d1 = 20 mm e êmbolo maior com d2 = 100 mm, no mesmo nível. Aplica-se F1 = 200 N no êmbolo menor, que desce 10 cm. Determine a pressão no óleo, a força no êmbolo maior e quanto ele sobe.',
+          [
+            ['Dados', 'd1 = 20 mm; d2 = 100 mm; F1 = 200 N; s1 = 10 cm'],
+            ['Converter', 'd1 = 0,020 m; d2 = 0,100 m; s1 = 0,10 m'],
+            ['Conceito', 'Princípio de Pascal: a pressão é a mesma nos dois êmbolos (mesmo nível); o volume deslocado também.'],
+            ['Equação', 'A = π·d²/4;  p = F1/A1;  F2 = p·A2;  s2 = s1·A1/A2'],
+            ['Cálculo', 'A1 = 3,1416 × 0,020²/4 = 3,1416 × 10⁻⁴ m²;  A2 = 3,1416 × 0,100²/4 = 7,854 × 10⁻³ m²'],
+            ['Cálculo', 'p = 200 / 3,1416 × 10⁻⁴ ≈ 636 600 Pa ≈ 636,6 kPa'],
+            ['Cálculo', 'F2 = 636 600 × 7,854 × 10⁻³ ≈ 5000 N  (atalho: (100/20)² = 25 → 25 × 200 N)'],
+            ['Cálculo', 's2 = 0,10 × (3,1416 × 10⁻⁴ / 7,854 × 10⁻³) = 0,10 / 25 = 0,004 m = 4 mm'],
+            ['Resultado', 'p ≈ 636,6 kPa; F2 = 5000 N; o êmbolo maior sobe 4 mm'],
+            ['Interpretação', 'A força ficou 25 vezes maior, mas o deslocamento ficou 25 vezes menor: W1 = 200 × 0,10 = 20 J = W2 = 5000 × 0,004. Ganha-se força, não energia.'],
+            ['Atenção', 'Com a razão dos diâmetros (5×) daria só 1000 N — erro clássico.'],
+          ],
+          'Complemento didático (números diferentes da lista de revisão)',
+        ),
+        link('#/revisao/rev-q13', 'Praticar: Q13 — prensa hidráulica'),
+        link('#/revisao/rev-q14', 'Praticar: Q14 — cilindro com perdas'),
+        link('#/revisao/rev-q15', 'Praticar: Q15 — elevador com desnível'),
+        vf('m5-16', 'm5-17', 'm5-18', 'm5-19', 'm5-20'),
+      ],
+      simpler: [
+        p('Líquido preso passa o empurrão adiante, igualzinho, para todo lado. Se do outro lado o êmbolo tem área 25 vezes maior, ele recebe força 25 vezes maior — mas anda 25 vezes menos. É troca de força por distância.'),
+      ],
+    },
+    {
       id: 'pratica',
       kind: 'practice',
       title: 'Prática guiada',
@@ -145,6 +212,7 @@ export const m5: Module = {
       'pabs = patm + pman.',
       'Mesma altura, mesmo fluido contínuo em repouso ⇒ mesma pressão.',
       'Manômetro: comece no ponto desconhecido; desce soma, sobe subtrai; use o ρ de cada trecho.',
+      'Pascal: a pressão se transmite integralmente; F1/A1 = F2/A2 no mesmo nível, F2 = F1·(d2/d1)²; ganha-se força, não energia.',
     ],
     mistakes: [
       'Inverter os sinais (somar ao subir).',
@@ -152,6 +220,7 @@ export const m5: Module = {
       'Multiplicar γ por g de novo.',
       'Confundir pressão manométrica com absoluta.',
       'Errar a soma final (como no caderno: 124,6 em vez de 129,6 kPa).',
+      'Na prensa, usar a razão dos diâmetros em vez da razão das áreas.',
     ],
   },
 };

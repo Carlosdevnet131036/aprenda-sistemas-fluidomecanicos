@@ -2,6 +2,7 @@ import { MODULES } from '../content/modules';
 import { QUESTIONS } from '../content/questions';
 import { EXERCISES } from '../content/exercises';
 import { REVISAO, REVISAO_GROUPS } from '../content/revisao';
+import { countSolved } from '../lib/progress';
 import { useProgress } from '../progressContext';
 import { moduleHref } from '../router';
 
@@ -46,7 +47,7 @@ export function Home() {
             aulas concluídas
           </p>
           <p className="muted small">
-            {state.solvedExercises.length} de {EXERCISES.length} exercícios resolvidos
+            {countSolved(state.solvedExercises, EXERCISES.map((e) => e.id))} de {EXERCISES.length} exercícios resolvidos
           </p>
           {next ? (
             <p className="small">
@@ -71,7 +72,7 @@ export function Home() {
           </div>
           <div className="card">
             <h3>Pressão e manometria</h3>
-            <p>Lei de Stevin, pressão absoluta e manométrica e como “caminhar” por um manômetro de tubo em U.</p>
+            <p>Lei de Stevin, pressão absoluta e manométrica, como “caminhar” por um manômetro de tubo em U e o princípio de Pascal nas prensas hidráulicas.</p>
           </div>
         </div>
       </section>

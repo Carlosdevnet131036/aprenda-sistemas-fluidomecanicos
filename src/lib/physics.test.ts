@@ -278,3 +278,29 @@ describe('Módulo 5 — pressão e manometria', () => {
     expect(F.gaugePressure(80e3, 101e3)).toBeLessThan(0);
   });
 });
+
+describe('Módulo 5 — princípio de Pascal', () => {
+  it('Exemplo do macaco hidráulico: d1 = 20 mm, d2 = 100 mm, F1 = 200 N', () => {
+    const a1 = F.circleAreaFromDiameter(0.02);
+    const a2 = F.circleAreaFromDiameter(0.1);
+    close(200 / a1, 636620, 1e-4);
+    close(F.pascalOutputForce(200, a1, a2), 5000, 1e-9);
+    const s2 = F.pascalOutputStroke(0.1, a1, a2);
+    close(s2, 0.004, 1e-9);
+    close(200 * 0.1, 5000 * s2, 1e-9); // trabalho igual nos dois êmbolos
+  });
+  it('a força cresce com o quadrado da razão dos diâmetros (6× no diâmetro ⇒ 36× na força)', () => {
+    const f2 = F.pascalOutputForce(360, F.circleAreaFromDiameter(0.032), F.circleAreaFromDiameter(0.192));
+    close(f2, 36 * 360, 1e-9);
+  });
+  it('cilindro hidráulico: F = p_man·A e perdas reduzem a força útil', () => {
+    const a = F.circleAreaFromDiameter(0.07);
+    close(F.hydraulicCylinderForce(5.5e6, a), 21167, 1e-3);
+    close(F.hydraulicCylinderForce(5.5e6, a, 0.12), 0.88 * 21167, 1e-3);
+    expect(() => F.hydraulicCylinderForce(5.5e6, a, 1.2)).toThrow(F.PhysicsError);
+  });
+  it('dados inválidos são rejeitados', () => {
+    expect(() => F.circleAreaFromDiameter(0)).toThrow(F.PhysicsError);
+    expect(() => F.pascalOutputForce(100, 0, 1)).toThrow(F.PhysicsError);
+  });
+});
